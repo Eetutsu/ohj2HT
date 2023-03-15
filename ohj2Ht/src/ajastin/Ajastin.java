@@ -1,5 +1,6 @@
 package ajastin;
 
+import java.util.List;
 
 /**
  * Ajastin-luokka, joka huolehtii profiileista.  Pääosin kaikki metodit
@@ -7,9 +8,33 @@ package ajastin;
  *
  * @author Eetu Alanen
  * @version 1.0, 01.03.2023
+ * @version 1.1, 15.3.2023
  */
 public class Ajastin {
     private final Profiilit profiilit = new Profiilit();
+    private final Pelit pelit = new Pelit();
+    
+    
+    
+    /**
+     * Lisätään uusi peli ajastimeen
+     * @param peli listtävä peli
+     */
+    public void lisaa(Peli pel) {
+    	pelit.lisaa(pel);
+    }
+    
+    
+    
+    /**
+     * Haetaan kaikki profiili pelit
+     * @param profiili jolle pelejä haetaan
+     * @return tietorakenne jossa viiteet löydetteyihin peleihin
+     */
+    public List<Peli> annaPelit(Profiili profiili) {
+        return pelit.annaPelit(profiili.getTunnusNro());
+    }
+
 
 
     /**
@@ -35,25 +60,6 @@ public class Ajastin {
      * Lisää Ajastimeen uuden profiilin
      * @param profiili lisättävä profiili
      * @throws SailoException jos lisäystä ei voida tehdä
-     * @example
-     * <pre name="test">
-     * #THROWS SailoException
-     * Ajastin ajastin = new Ajastin();
-     * Profiili matti1 = new Profiili(), matti2 = new Profiili();
-     * matti1.rekisteroi(); matti2.rekisteroi();
-     * ajastin.getProfiiliia() === 0;
-     * ajastin.lisaa(matti1); ajastin.getProfiiliia() === 1;
-     * ajastin.lisaa(matti2); ajastin.getProfiiliia() === 2;
-     * ajastin.lisaa(matti1); ajastin.getProfiiliia() === 3;
-     * ajastin.getProfiiliia() === 3;
-     * ajastin.annaProfiili(0) === matti1;
-     * ajastin.annaProfiili(1) === matti2;
-     * ajastin.annaProfiili(2) === matti1;
-     * ajastin.annaProfiili(3) === matti1; #THROWS IndexOutOfBoundsException 
-     * ajastin.lisaa(matti1); ajastin.getProfiiliia() === 4;
-     * ajastin.lisaa(matti1); ajastin.getProfiiliia() === 5;
-     * ajastin.lisaa(matti1);            #THROWS SailoException
-     * </pre>
      */
     public void lisaa(Profiili Profiili) throws SailoException {
         profiilit.lisaa(Profiili);
@@ -78,6 +84,8 @@ public class Ajastin {
      */
     public void lueTiedostosta(String nimi) throws SailoException {
         profiilit.lueTiedostosta(nimi);
+        pelit.lueTiedostosta(nimi);
+
     }
 
 
@@ -87,6 +95,8 @@ public class Ajastin {
      */
     public void talleta() throws SailoException {
         profiilit.talleta();
+        pelit.talleta();
+
         // TODO: yritä tallettaa toinen vaikka toinen epäonnistuisi
     }
 
@@ -109,13 +119,26 @@ public class Ajastin {
 
             ajastin.lisaa(matti1);
             ajastin.lisaa(matti2);
+            
+            int id1 = matti1.getTunnusNro();
+            int id2 = matti2.getTunnusNro();
+            Peli dota11 = new Peli(id1); dota11.lisaaPeli(id1); ajastin.lisaa(dota11);
+            Peli dota12 = new Peli(id1); dota12.lisaaPeli(id1); ajastin.lisaa(dota12);
+            Peli dota21 = new Peli(id2); dota21.lisaaPeli(id2); ajastin.lisaa(dota21);
+            Peli dota22 = new Peli(id2); dota22.lisaaPeli(id2); ajastin.lisaa(dota22);
+            Peli dota23 = new Peli(id2); dota23.lisaaPeli(id2); ajastin.lisaa(dota23);
+
 
             System.out.println("============= ajastimen testi =================");
 
             for (int i = 0; i < ajastin.getProfiilit(); i++) {
-                Profiili Profiili = ajastin.annaProfiili(i);
+                Profiili profiili = ajastin.annaProfiili(i);
                 System.out.println("Jäsen paikassa: " + i);
-                Profiili.tulosta(System.out);
+                profiili.tulosta(System.out);
+                List<Peli> loytyneet = ajastin.annaPelit(profiili);
+                for (Peli peli : loytyneet)
+                    peli.tulosta(System.out);
+
             }
 
         } catch (SailoException ex) {

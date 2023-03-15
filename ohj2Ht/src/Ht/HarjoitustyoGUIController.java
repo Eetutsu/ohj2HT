@@ -6,9 +6,11 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import ajastin.Ajastin;
+import ajastin.Peli;
 import ajastin.Profiili;
 import ajastin.SailoException;
 import fi.jyu.mit.fxgui.ComboBoxChooser;
@@ -69,7 +71,7 @@ public class HarjoitustyoGUIController implements Initializable{
     
     @FXML
     void pelinLisays(MouseEvent event) {
-    	ModalController.showModal(HarjoitustyoGUIController.class.getResource("UusiPeli.fxml"), "Peli", null, "");
+    	uusiPeli();
     }
 
     
@@ -82,7 +84,17 @@ public class HarjoitustyoGUIController implements Initializable{
     
     @FXML
     void etsi() {
-    	Dialogs.showMessageDialog("Ei osata vielä etsiä");
+        String hakukentta = cbKentat.getSelectedText();
+        String ehto = hakuehto.getText(); 
+        if ( ehto.isEmpty() )
+            naytaVirhe(null);
+        else
+            naytaVirhe("Ei osata vielä hakea " + hakukentta + ": " + ehto);
+    }
+    
+    
+    @FXML private void handleTallenna() {
+        tallenna();
     }
 
 
@@ -107,20 +119,7 @@ public class HarjoitustyoGUIController implements Initializable{
 		alusta();
 	}
 	
-	
-	 @FXML private void handleHakuehto() {
-	        String hakukentta = cbKentat.getSelectedText();
-	        String ehto = hakuehto.getText(); 
-	        if ( ehto.isEmpty() )
-	            naytaVirhe(null);
-	        else
-	            naytaVirhe("Ei osata vielä hakea " + hakukentta + ": " + ehto);
-	    }
-	    
-	    
-	    @FXML private void handleTallenna() {
-	        tallenna();
-	    }
+
 	    
 	    
 	    @FXML private void handleMuokkaaHarrastus() {
@@ -147,6 +146,24 @@ public class HarjoitustyoGUIController implements Initializable{
     private Ajastin ajastin;
     private Profiili profiiliKohdalla;
     private TextArea areaProfiili = new TextArea();
+    
+    
+    /** 
+     * Tekee uuden tyhjän pelin editointia varten 
+     */ 
+    public void uusiPeli() { 
+        if ( profiiliKohdalla == null ) {
+        	Dialogs.showMessageDialog("Lisää ensin profiili!");
+        	return;  
+        }
+        Peli pel = new Peli();  
+        pel.rekisteroi();  
+        pel.lisaaPeli(profiiliKohdalla.getTunnusNro());  
+        ajastin.lisaa(pel);  
+        hae(profiiliKohdalla.getTunnusNro());          
+    } 
+ 
+
     
     
     /**
@@ -192,11 +209,6 @@ public class HarjoitustyoGUIController implements Initializable{
             Dialogs.showMessageDialog(virhe);
     }
 
-    
-    /**
-     * Kysytään tiedoston nimi ja luetaan se
-     * @return true jos onnistui, false jos ei
-     */
 
 
     
@@ -229,7 +241,9 @@ public class HarjoitustyoGUIController implements Initializable{
 
         areaProfiili.setText("");
         try (PrintStream os = TextAreaOutputStream.getTextPrintStream(areaProfiili)) {
-            profiiliKohdalla.tulosta(os);
+            		
+            tulosta(os,profiiliKohdalla);  
+
         }
     }
     
@@ -289,6 +303,10 @@ public class HarjoitustyoGUIController implements Initializable{
         os.println("----------------------------------------------");
         profiili.tulosta(os);
         os.println("----------------------------------------------");
+        List<Peli> pelit = ajastin.annaPelit(profiili);   
+        for (Peli pel:pelit)
+            pel.tulosta(os); 
+
     }	
 }
 
