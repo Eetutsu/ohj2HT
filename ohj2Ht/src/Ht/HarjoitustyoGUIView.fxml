@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import fi.jyu.mit.fxgui.ComboBoxChooser?>
 <?import fi.jyu.mit.fxgui.ListChooser?>
 <?import fi.jyu.mit.fxgui.StringGrid?>
 <?import javafx.scene.control.Button?>
@@ -19,7 +20,7 @@
    <bottom>
       <FlowPane BorderPane.alignment="CENTER" />
    </bottom>
-   <top>
+   <left>
       <Pane prefHeight="527.0" prefWidth="458.0" BorderPane.alignment="CENTER">
          <children>
             <MenuBar layoutY="1.0" prefHeight="25.0" prefWidth="466.0">
@@ -42,12 +43,12 @@
               </menus>
             </MenuBar>
             <BorderPane layoutY="26.0" />
-            <Pane layoutY="26.0" prefHeight="271.0" prefWidth="211.0">
+            <Pane layoutX="5.0" layoutY="26.0" prefHeight="271.0" prefWidth="211.0">
                <children>
-                  <TextField id="haku" layoutX="26.0" layoutY="35.0" onKeyReleased="#etsi" />
-                  <Label layoutX="68.0" layoutY="14.0" text="Hae profiilia" />
-                  <ListChooser fx:id="chooserProfiilit" layoutY="63.0" prefHeight="207.0" prefWidth="207.0" rivit="Profiilit&#10;Prfiili1&#10;Profiili2&#10;Profiili3&#10;" />
-                  <Button id="lisaaProfiili" layoutX="118.0" layoutY="232.0" mnemonicParsing="false" onMouseClicked="#lisaaProfiili" text="Lisää profiili" />
+                  <TextField id="haku" fx:id="hakuehto" layoutX="26.0" layoutY="64.0" onKeyReleased="#etsi" />
+                  <Label layoutX="69.0" text="Hae profiilia" />
+                  <ListChooser fx:id="chooserProfiilit" layoutX="2.0" layoutY="89.0" prefHeight="207.0" prefWidth="207.0" rivit="Profiilit&#10;Prfiili1&#10;Profiili2&#10;Profiili3&#10;" />
+                  <ComboBoxChooser fx:id="cbKentat" layoutX="27.0" layoutY="29.0" prefHeight="25.0" prefWidth="99.0" promptText="nimi" />
                </children>
             </Pane>
             <Label layoutX="88.0" layoutY="448.0" text="01.10.15" />
@@ -66,7 +67,9 @@
                   </AnchorPane>
               </content>
             </ScrollPane>
+            <Label fx:id="labelVirhe" layoutX="14.0" layoutY="352.0" text="Label" />
+            <Button id="lisaaProfiili" layoutX="128.0" layoutY="327.0" mnemonicParsing="false" onMouseClicked="#lisaaProfiili" text="Lisää profiili" />
          </children>
       </Pane>
-   </top>
+   </left>
 </BorderPane>

@@ -1,15 +1,29 @@
 package ajastin;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /**
  * Kerhon jäsenistö joka osaa mm. lisätä uuden jäsenen
  *
  * @author Eetu Alanen
  * @version 1.0, 1.3.2023 
  */
-public class Profiilit {
+public class Profiilit implements Iterable<Profiili> {
     private int MAX_Profiileja = 5;
+    private boolean muutettu = false;
     private int lkm = 0;
-    private String tiedostonNimi = "";
+    private String kokoNimi = "";
+    private String tiedostonPerusNimi = "nimet";
     private Profiili alkiot[] = new Profiili[MAX_Profiileja];
 
 
@@ -49,6 +63,8 @@ public class Profiilit {
         if (lkm >= alkiot.length) uusiTaulukko();
         alkiot[lkm] = profiili;
         lkm++;
+        muutettu = true;
+
     }
     
     
@@ -76,8 +92,8 @@ public class Profiilit {
      * @throws IndexOutOfBoundsException jos i ei ole sallitulla alueella  
      */
     public Profiili anna(int i) throws IndexOutOfBoundsException {
-        if (i < 0 || lkm <= i)
-            throw new IndexOutOfBoundsException("Laiton indeksi: " + i);
+        if ( i < 0 || lkm <= i ) throw new IndexOutOfBoundsException("Laiton indeksi: " + i);
+
         return alkiot[i];
     }
 
@@ -87,19 +103,231 @@ public class Profiilit {
      * @param hakemisto tiedoston hakemisto
      * @throws SailoException jos lukeminen epäonnistuu
      */
-    public void lueTiedostosta(String hakemisto) throws SailoException {
-        tiedostonNimi = hakemisto + "/nimet.dat";
-        throw new SailoException("Ei osata vielä lukea tiedostoa " + tiedostonNimi);
+    public void lueTiedostosta(String tied) throws SailoException {
+        setTiedostonPerusNimi(tied);
+        try ( BufferedReader fi = new BufferedReader(new FileReader(getTiedostonNimi())) ) {
+            kokoNimi = fi.readLine();
+            if ( kokoNimi == null ) throw new SailoException("Kerhon nimi puuttuu");
+            String rivi = fi.readLine();
+            if ( rivi == null ) throw new SailoException("Maksimikoko puuttuu");
+            // int maxKoko = Mjonot.erotaInt(rivi,10); // tehdään jotakin
+
+            while ( (rivi = fi.readLine()) != null ) {
+                rivi = rivi.trim();
+                if ( "".equals(rivi) || rivi.charAt(0) == ';' ) continue;
+                Profiili profiili = new Profiili();
+                profiili.parse(rivi); // voisi olla virhekäsittely
+                lisaa(profiili);
+            }
+            muutettu = false;
+        } catch ( FileNotFoundException e ) {
+            throw new SailoException("Tiedosto " + getTiedostonNimi() + " ei aukea");
+        } catch ( IOException e ) {
+            throw new SailoException("Ongelmia tiedoston kanssa: " + e.getMessage());
+        }
     }
+
+    
+    public void lueTiedostosta() throws SailoException {
+        lueTiedostosta(getTiedostonPerusNimi());
+    }
+
 
 
     /**
      * Tallentaa profiili kannan tiedostoon.  Kesken.
      * @throws SailoException jos talletus epäonnistuu
      */
-    public void talleta() throws SailoException {
-        throw new SailoException("Ei osata vielä tallettaa tiedostoa " + tiedostonNimi);
+    public void tallenna() throws SailoException {
+        if ( !muutettu ) return;
+
+        File fbak = new File(getBakNimi());
+        File ftied = new File(getTiedostonNimi());
+        fbak.delete(); // if .. System.err.println("Ei voi tuhota");
+        ftied.renameTo(fbak); // if .. System.err.println("Ei voi nimetä");
+
+        try ( PrintWriter fo = new PrintWriter(new FileWriter(ftied.getCanonicalPath())) ) {
+            fo.println(getKokoNimi());
+            fo.println(alkiot.length);
+            for (Profiili profiili : this) {
+                fo.println(profiili.toString());
+            }
+            //} catch ( IOException e ) { // ei heitä poikkeusta
+            //  throw new SailoException("Tallettamisessa ongelmia: " + e.getMessage());
+        } catch ( FileNotFoundException ex ) {
+            throw new SailoException("Tiedosto " + ftied.getName() + " ei aukea");
+        } catch ( IOException ex ) {
+            throw new SailoException("Tiedoston " + ftied.getName() + " kirjoittamisessa ongelmia");
+        }
+
+        muutettu = false;
     }
+
+
+    
+    /**
+     * Palauttaa Kerhon koko nimen
+     * @return Kerhon koko nimi merkkijononna
+     */
+    public String getKokoNimi() {
+        return kokoNimi;
+    }
+
+    
+    /**
+     * Palauttaa tiedoston nimen, jota käytetään tallennukseen
+     * @return tallennustiedoston nimi
+     */
+    public String getTiedostonPerusNimi() {
+        return tiedostonPerusNimi;
+    }
+
+
+    /**
+     * Asettaa tiedoston perusnimen ilan tarkenninta
+     * @param nimi tallennustiedoston perusnimi
+     */
+    public void setTiedostonPerusNimi(String nimi) {
+        tiedostonPerusNimi = nimi;
+    }
+
+
+    /**
+     * Palauttaa tiedoston nimen, jota käytetään tallennukseen
+     * @return tallennustiedoston nimi
+     */
+    public String getTiedostonNimi() {
+        return getTiedostonPerusNimi() + ".dat";
+    }
+
+
+    /**
+     * Palauttaa varakopiotiedoston nimen
+     * @return varakopiotiedoston nimi
+     */
+    public String getBakNimi() {
+        return tiedostonPerusNimi + ".bak";
+    }
+
+    
+    /**
+     * Luokka jäsenten iteroimiseksi.
+     * @example
+     * <pre name="test">
+     * #THROWS SailoException 
+     * #PACKAGEIMPORT
+     * #import java.util.*;
+     * 
+     * Jasenet jasenet = new Jasenet();
+     * Jasen aku1 = new Jasen(), aku2 = new Jasen();
+     * aku1.rekisteroi(); aku2.rekisteroi();
+     *
+     * jasenet.lisaa(aku1); 
+     * jasenet.lisaa(aku2); 
+     * jasenet.lisaa(aku1); 
+     * 
+     * StringBuffer ids = new StringBuffer(30);
+     * for (Jasen jasen:jasenet)   // Kokeillaan for-silmukan toimintaa
+     *   ids.append(" "+jasen.getTunnusNro());           
+     * 
+     * String tulos = " " + aku1.getTunnusNro() + " " + aku2.getTunnusNro() + " " + aku1.getTunnusNro();
+     * 
+     * ids.toString() === tulos; 
+     * 
+     * ids = new StringBuffer(30);
+     * for (Iterator<Jasen>  i=jasenet.iterator(); i.hasNext(); ) { // ja iteraattorin toimintaa
+     *   Jasen jasen = i.next();
+     *   ids.append(" "+jasen.getTunnusNro());           
+     * }
+     * 
+     * ids.toString() === tulos;
+     * 
+     * Iterator<Jasen>  i=jasenet.iterator();
+     * i.next() == aku1  === true;
+     * i.next() == aku2  === true;
+     * i.next() == aku1  === true;
+     * 
+     * i.next();  #THROWS NoSuchElementException
+     *  
+     * </pre>
+     */
+    public class ProfiilitIterator implements Iterator<Profiili> {
+        private int kohdalla = 0;
+
+
+        /**
+         * Onko olemassa vielä seuraavaa jäsentä
+         * @see java.util.Iterator#hasNext()
+         * @return true jos on vielä jäseniä
+         */
+        @Override
+        public boolean hasNext() {
+            return kohdalla < getLkm();
+        }
+
+
+        /**
+         * Annetaan seuraava jäsen
+         * @return seuraava jäsen
+         * @throws NoSuchElementException jos seuraava alkiota ei enää ole
+         * @see java.util.Iterator#next()
+         */
+        @Override
+        public Profiili next() throws NoSuchElementException {
+            if ( !hasNext() ) throw new NoSuchElementException("Ei oo");
+            return anna(kohdalla++);
+        }
+
+
+        /**
+         * Tuhoamista ei ole toteutettu
+         * @throws UnsupportedOperationException aina
+         * @see java.util.Iterator#remove()
+         */
+        @Override
+        public void remove() throws UnsupportedOperationException {
+            throw new UnsupportedOperationException("Me ei poisteta");
+        }
+    }
+
+
+    /**
+     * Palautetaan iteraattori jäsenistään.
+     * @return jäsen iteraattori
+     */
+    @Override
+    public Iterator<Profiili> iterator() {
+        return new ProfiilitIterator();
+    }
+
+
+    /** 
+     * Palauttaa "taulukossa" hakuehtoon vastaavien jäsenten viitteet 
+     * @param hakuehto hakuehto 
+     * @param k etsittävän kentän indeksi  
+     * @return tietorakenteen löytyneistä jäsenistä 
+     * @example 
+     * <pre name="test"> 
+     * #THROWS SailoException  
+     *   Jasenet jasenet = new Jasenet(); 
+     *   Jasen jasen1 = new Jasen(); jasen1.parse("1|Ankka Aku|030201-115H|Paratiisitie 13|"); 
+     *   Jasen jasen2 = new Jasen(); jasen2.parse("2|Ankka Tupu||030552-123B|"); 
+     *   Jasen jasen3 = new Jasen(); jasen3.parse("3|Susi Sepe|121237-121V||131313|Perämetsä"); 
+     *   Jasen jasen4 = new Jasen(); jasen4.parse("4|Ankka Iines|030245-115V|Ankkakuja 9"); 
+     *   Jasen jasen5 = new Jasen(); jasen5.parse("5|Ankka Roope|091007-408U|Ankkakuja 12"); 
+     *   jasenet.lisaa(jasen1); jasenet.lisaa(jasen2); jasenet.lisaa(jasen3); jasenet.lisaa(jasen4); jasenet.lisaa(jasen5);
+     *   // TODO: toistaiseksi palauttaa kaikki jäsenet 
+     * </pre> 
+     */ 
+    @SuppressWarnings("unused")
+    public Collection<Profiili> etsi(String hakuehto, int k) { 
+        Collection<Profiili> loytyneet = new ArrayList<Profiili>(); 
+        for (Profiili profiili : this) { 
+            loytyneet.add(profiili);  
+        } 
+        return loytyneet; 
+    }
+    
 
 
     /**

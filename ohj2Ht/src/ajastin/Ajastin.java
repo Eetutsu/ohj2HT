@@ -1,5 +1,7 @@
 package ajastin;
 
+import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -11,8 +13,8 @@ import java.util.List;
  * @version 1.1, 15.3.2023
  */
 public class Ajastin {
-    private final Profiilit profiilit = new Profiilit();
-    private final Pelit pelit = new Pelit();
+    private Profiilit profiilit = new Profiilit();
+    private Pelit pelit = new Pelit();
     
     
     
@@ -20,9 +22,10 @@ public class Ajastin {
      * Lisätään uusi peli ajastimeen
      * @param peli listtävä peli
      */
-    public void lisaa(Peli pel) {
-    	pelit.lisaa(pel);
+    public void lisaa(Peli pel) throws SailoException {
+        pelit.lisaa(pel);
     }
+
     
     
     
@@ -31,19 +34,14 @@ public class Ajastin {
      * @param profiili jolle pelejä haetaan
      * @return tietorakenne jossa viiteet löydetteyihin peleihin
      */
-    public List<Peli> annaPelit(Profiili profiili) {
+    public List<Peli> annaPelit(Profiili profiili) throws SailoException {
         return pelit.annaPelit(profiili.getTunnusNro());
     }
 
 
 
-    /**
-     * Palautaa Ajastimen profiilit
-     * @return profiilien määrä
-     */
-    public int getProfiilit() {
-        return profiilit.getLkm();
-    }
+
+
 
 
     /**
@@ -66,15 +64,17 @@ public class Ajastin {
     }
 
 
-    /**
-     * Palauttaa i:n profiilin
-     * @param i monesko profiili palautetaan
-     * @return viite i:teen profiiliin
-     * @throws IndexOutOfBoundsException jos i väärin
-     */
-    public Profiili annaProfiili(int i) throws IndexOutOfBoundsException {
-        return profiilit.anna(i);
-    }
+    /** 
+     * Palauttaa "taulukossa" hakuehtoon vastaavien jäsenten viitteet 
+     * @param hakuehto hakuehto  
+     * @param k etsittävän kentän indeksi  
+     * @return tietorakenteen löytyneistä jäsenistä 
+     * @throws SailoException Jos jotakin menee väärin
+     */ 
+    public Collection<Profiili> etsi(String hakuehto, int k) throws SailoException { 
+        return profiilit.etsi(hakuehto, k); 
+    } 
+
 
 
     /**
@@ -83,8 +83,12 @@ public class Ajastin {
      * @throws SailoException jos lukeminen epäonnistuu
      */
     public void lueTiedostosta(String nimi) throws SailoException {
-        profiilit.lueTiedostosta(nimi);
-        pelit.lueTiedostosta(nimi);
+        profiilit = new Profiilit(); // jos luetaan olemassa olevaan niin helpoin tyhjentää näin
+        pelit = new Pelit();
+
+        setTiedosto(nimi);
+        profiilit.lueTiedostosta();
+        pelit.lueTiedostosta();
 
     }
 
@@ -93,11 +97,35 @@ public class Ajastin {
      * Tallettaa ajastimen tiedot tiedostoon
      * @throws SailoException jos tallettamisessa ongelmia
      */
-    public void talleta() throws SailoException {
-        profiilit.talleta();
-        pelit.talleta();
+    public void tallenna() throws SailoException {
+        String virhe = "";
+        try {
+            profiilit.tallenna();
+        } catch ( SailoException ex ) {
+            virhe = ex.getMessage();
+        }
 
-        // TODO: yritä tallettaa toinen vaikka toinen epäonnistuisi
+        try {
+            pelit.tallenna();
+        } catch ( SailoException ex ) {
+            virhe += ex.getMessage();
+        }
+        if ( !"".equals(virhe) ) throw new SailoException(virhe);
+    }
+
+
+    
+    /**
+     * Asettaa tiedostojen perusnimet
+     * @param nimi uusi nimi
+     */
+    public void setTiedosto(String nimi) {
+        File dir = new File(nimi);
+        dir.mkdirs();
+        String hakemistonNimi = "";
+        if ( !nimi.isEmpty() ) hakemistonNimi = nimi +"/";
+        profiilit.setTiedostonPerusNimi(hakemistonNimi + "nimet");
+        pelit.setTiedostonPerusNimi(hakemistonNimi + "pelit");
     }
 
 
@@ -130,15 +158,15 @@ public class Ajastin {
 
 
             System.out.println("============= ajastimen testi =================");
-
-            for (int i = 0; i < ajastin.getProfiilit(); i++) {
-                Profiili profiili = ajastin.annaProfiili(i);
+            Collection<Profiili> profiilit = ajastin.etsi("", -1);
+            int i = 0;
+            for (Profiili profiili: profiilit) {
                 System.out.println("Jäsen paikassa: " + i);
                 profiili.tulosta(System.out);
                 List<Peli> loytyneet = ajastin.annaPelit(profiili);
                 for (Peli peli : loytyneet)
                     peli.tulosta(System.out);
-
+                i++;
             }
 
         } catch (SailoException ex) {

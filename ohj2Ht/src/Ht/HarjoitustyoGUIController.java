@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -46,8 +47,13 @@ public class HarjoitustyoGUIController implements Initializable{
     @FXML private Label labelVirhe;
 
     
-    private String ajastinnimi = "kelmit";
+ 
 
+    @FXML private void handleHakuehto() {
+        if ( profiiliKohdalla != null )
+            hae(profiiliKohdalla.getTunnusNro());
+
+    }
     
 
     @FXML private void handleTulosta() {
@@ -143,6 +149,7 @@ public class HarjoitustyoGUIController implements Initializable{
 
 	//=========================================================================================== 
 
+	private String ajastinnimi = "ajastin";
     private Ajastin ajastin;
     private Profiili profiiliKohdalla;
     private TextArea areaProfiili = new TextArea();
@@ -150,17 +157,20 @@ public class HarjoitustyoGUIController implements Initializable{
     
     /** 
      * Tekee uuden tyhjän pelin editointia varten 
+     * @throws SailoException 
      */ 
-    public void uusiPeli() { 
-        if ( profiiliKohdalla == null ) {
-        	Dialogs.showMessageDialog("Lisää ensin profiili!");
-        	return;  
-        }
-        Peli pel = new Peli();  
-        pel.rekisteroi();  
-        pel.lisaaPeli(profiiliKohdalla.getTunnusNro());  
-        ajastin.lisaa(pel);  
-        hae(profiiliKohdalla.getTunnusNro());          
+    public void uusiPeli(){ 
+        if ( profiiliKohdalla == null ) return; 
+        Peli pel = new Peli(); 
+        pel.rekisteroi(); 
+        pel.lisaaPeli(profiiliKohdalla.getTunnusNro()); 
+        try {
+            ajastin.lisaa(pel);
+        } catch (SailoException e) {
+            Dialogs.showMessageDialog("Ongelmia lisäämisessä! " + e.getMessage());
+        } 
+        hae(profiiliKohdalla.getTunnusNro());   
+
     } 
  
 
@@ -201,12 +211,20 @@ public class HarjoitustyoGUIController implements Initializable{
      * Alustaa kerhon lukemalla sen valitun nimisestä tiedostosta
      * @param nimi tiedosto josta kerhon tiedot luetaan
      */
-    protected void lueTiedosto(String nimi) {
+    protected String lueTiedosto(String nimi)  {
         ajastinnimi = nimi;
         setTitle("Ajastin - " + ajastinnimi);
-        String virhe = "Ei osata lukea vielä";  // TODO: tähän oikea tiedoston lukeminen
-        // if (virhe != null) 
-            Dialogs.showMessageDialog(virhe);
+        try {
+            ajastin.lueTiedostosta(nimi);
+            hae(0);
+            return null;
+        } catch (SailoException e) {
+            hae(0);
+            String virhe = e.getMessage(); 
+            if ( virhe != null ) Dialogs.showMessageDialog(virhe);
+            return virhe;
+        }
+
     }
 
 
@@ -215,8 +233,16 @@ public class HarjoitustyoGUIController implements Initializable{
     /**
      * Tietojen tallennus
      */
-    private void tallenna() {
-        Dialogs.showMessageDialog("Tallennetetaan! Mutta ei toimi vielä");
+ 
+        private String tallenna() {
+            try {
+                ajastin.tallenna();
+                return null;
+            } catch (SailoException ex) {
+                Dialogs.showMessageDialog("Tallennuksessa ongelmia! " + ex.getMessage());
+                return ex.getMessage();
+            }
+
     }
 
 
@@ -237,7 +263,11 @@ public class HarjoitustyoGUIController implements Initializable{
     protected void naytaProfiili() {
         profiiliKohdalla = chooserProfiilit.getSelectedObject();
 
-        if (profiiliKohdalla == null) return;
+        if (profiiliKohdalla == null) {
+            areaProfiili.clear();
+            return;
+        }
+
 
         areaProfiili.setText("");
         try (PrintStream os = TextAreaOutputStream.getTextPrintStream(areaProfiili)) {
@@ -253,15 +283,30 @@ public class HarjoitustyoGUIController implements Initializable{
      * @param jnro profiilin numero, joka aktivoidaan haun jälkeen
      */
     protected void hae(int jnro) {
+        int k = cbKentat.getSelectionModel().getSelectedIndex();
+        String ehto = hakuehto.getText(); 
+        if (k > 0 || ehto.length() > 0)
+            naytaVirhe(String.format("Ei osata hakea (kenttä: %d, ehto: %s)", k, ehto));
+        else
+            naytaVirhe(null);
+
         chooserProfiilit.clear();
 
         int index = 0;
-        for (int i = 0; i < ajastin.getProfiilit(); i++) {
-            Profiili profiili = ajastin.annaProfiili(i);
-            if (profiili.getTunnusNro() == jnro) index = i;
-            chooserProfiilit.add(profiili.getNimi(), profiili);
-        }
+        Collection<Profiili> profiilit;
+        try {
+            profiilit = ajastin.etsi(ehto, k);
+            int i = 0;
+            for (Profiili profiili:profiilit) {
+                if (profiili.getTunnusNro() == jnro) index = i;
+                chooserProfiilit.add(profiili.getNimi(), profiili);
+                i++;
+            }
+        } catch (SailoException ex) {
+            Dialogs.showMessageDialog("Jäsenen hakemisessa ongelmia! " + ex.getMessage());
+
         chooserProfiilit.setSelectedIndex(index);
+        }
     }
     
     
@@ -303,11 +348,18 @@ public class HarjoitustyoGUIController implements Initializable{
         os.println("----------------------------------------------");
         profiili.tulosta(os);
         os.println("----------------------------------------------");
-        List<Peli> pelit = ajastin.annaPelit(profiili);   
-        for (Peli pel:pelit)
-            pel.tulosta(os); 
+        try {
+            List<Peli> pelit = ajastin.annaPelit(profiili);
+            for (Peli pel :pelit) 
+                pel.tulosta(os);     
+        } catch (SailoException ex) {
+            Dialogs.showMessageDialog("Harrastusten hakemisessa ongelmia! " + ex.getMessage());
+        }    
 
-    }	
+    }
+
+
+
 }
 
    
