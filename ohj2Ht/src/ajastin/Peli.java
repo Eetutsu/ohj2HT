@@ -21,7 +21,7 @@ public class Peli {
 
 
     /**
-     * Alustetaan harrastus.  Toistaiseksi ei tarvitse tehdä mitään
+     * Alustetaan peli.  Toistaiseksi ei tarvitse tehdä mitään
      */
     public Peli() {
         // Vielä ei tarvita mitään
@@ -29,7 +29,7 @@ public class Peli {
 
 
     /**
-     * Alustetaan tietyn jäsenen harrastus.  
+     * Alustetaan tietyn jäsenen peli.  
      * @param jasenNro jäsenen viitenumero 
      */
     public Peli(int profiiliNro) {
@@ -114,8 +114,8 @@ public class Peli {
      * @example
      * <pre name="test">
      *   Peli peli = new Peli();
-     *   harrastus.parse("   2   |  2  |   Dota 2  | 1949  ");
-     *   harrastus.toString()    === "2|10|Dota 2|1949|";
+     *   peli.parse("2|2|Dota 2|1949");
+     *   peli.toString()    === "2|2|Dota 2|1949";
      * </pre>
      */
     @Override
@@ -130,17 +130,17 @@ public class Peli {
      * @param rivi josta harrastuksen tiedot otetaan
      * @example
      * <pre name="test">
-     *   Harrastus harrastus = new Harrastus();
-     *   harrastus.parse("   2   |  10  |   Kalastus  | 1949 | 22 t ");
-     *   harrastus.getJasenNro() === 10;
-     *   harrastus.toString()    === "2|10|Kalastus|1949|22";
+     *   Peli peli = new Peli();
+     *   peli.parse("2|2|Dota|1949");
+     *   peli.getProfiiliNro() === 2;
+     *   peli.toString()    === "2|2|Dota|1949";
      *   
-     *   harrastus.rekisteroi();
-     *   int n = harrastus.getTunnusNro();
-     *   harrastus.parse(""+(n+20));
-     *   harrastus.rekisteroi();
-     *   harrastus.getTunnusNro() === n+20+1;
-     *   harrastus.toString()     === "" + (n+20+1) + "|10|Kalastus|1949|22";
+     *   peli.rekisteroi();
+     *   int n = peli.getTunnusNro();
+     *   peli.parse(""+(n+20));
+     *   peli.rekisteroi();
+     *   peli.getTunnusNro() === n+20+1;
+     *   peli.toString()     === "" + (n+20+1) + "|2|Dota|1949";
      * </pre>
      */
     public void parse(String rivi) {

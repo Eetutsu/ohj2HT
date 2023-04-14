@@ -182,6 +182,9 @@ public class HarjoitustyoGUIController implements Initializable{
     private TextArea areaProfiili = new TextArea();
     
     
+    protected void avaa() {
+    	lueTiedosto(ajastinnimi);
+    }
     
     
     /**
@@ -190,13 +193,13 @@ public class HarjoitustyoGUIController implements Initializable{
      * Alustetaan myös profiililistan kuuntelija 
      */
     protected void alusta() {
-    	
         panelProfiili.setContent(areaProfiili);
         areaProfiili.setFont(new Font("Courier New", 12));
         panelProfiili.setFitToHeight(true);
         
         chooserProfiilit.clear();
         chooserProfiilit.addSelectionListener(e -> naytaProfiili());
+
         
     }
     
@@ -254,7 +257,7 @@ public class HarjoitustyoGUIController implements Initializable{
             if ( virhe != null ) Dialogs.showMessageDialog(virhe);
             return virhe;
         }
-
+        
     }
 
 
@@ -362,7 +365,9 @@ public class HarjoitustyoGUIController implements Initializable{
      */
     public void setAjastin(Ajastin ajastin) {
         this.ajastin = ajastin;
+        
         naytaProfiili();
+        
     }
 
 

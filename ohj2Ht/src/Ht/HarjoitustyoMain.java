@@ -19,6 +19,7 @@ public class HarjoitustyoMain extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
+        	
             FXMLLoader ldr = new FXMLLoader(getClass().getResource("HarjoitustyoGUIView.fxml"));
             final Pane root = (Pane)ldr.load();
             final HarjoitustyoGUIController harjoitustyoCtrl = (HarjoitustyoGUIController)ldr.getController();
@@ -32,8 +33,11 @@ public class HarjoitustyoMain extends Application {
             	if(!harjoitustyoCtrl.voikoSulkea() ) event.consume();
             });
             Ajastin ajastin = new Ajastin();
+       
             harjoitustyoCtrl.setAjastin(ajastin);  
-            ajastin.lueTiedostosta("peliAjastin");
+            harjoitustyoCtrl.avaa();
+            
+            
             
             primaryStage.show();
          
