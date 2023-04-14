@@ -345,6 +345,7 @@ public class Profiilit implements Iterable<Profiili> {
      */
     public static void main(String args[]) {
         Profiilit Profiilit = new Profiilit();
+        
 
         Profiili matti = new Profiili(), matti2 = new Profiili(), matti3 = new Profiili();
         matti.rekisteroi();
@@ -370,6 +371,12 @@ public class Profiilit implements Iterable<Profiili> {
         } catch (SailoException ex) {
             System.out.println(ex.getMessage());
         }
+        try {
+			Profiilit.tallenna();
+		} catch (SailoException e) {
+			e.printStackTrace();
+		}
     }
+    
 
 }

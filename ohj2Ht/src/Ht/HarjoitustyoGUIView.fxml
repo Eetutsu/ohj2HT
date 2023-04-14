@@ -55,9 +55,9 @@
             <ToggleButton id="ajastin" layoutX="85.0" layoutY="398.0" mnemonicParsing="false" onMouseClicked="#aloitaAjastin" prefHeight="0.0" prefWidth="52.0" text="Ajastin" />
             <BorderPane layoutX="218.0" layoutY="61.0" />
             <Label layoutX="280.0" layoutY="44.0" text="Profiilin tiedot" />
-            <StringGrid layoutX="207.0" layoutY="295.0" prefHeight="196.0" prefWidth="258.0" rivit="Peli|Tunnit|Keskiarvo&#10;Runescape|100|3&#10;Dota 2|100|5&#10;Cs GO|100|10&#10;" />
-            <Button id="lisaaPeli" layoutX="207.0" layoutY="491.0" mnemonicParsing="false" onMouseClicked="#pelinLisays" text="Lisää peli" />
-            <Button id="sulje" layoutX="410.0" layoutY="491.0" mnemonicParsing="false" onMouseClicked="#suljeOhjelma" text="Sulje" />
+            <StringGrid layoutX="213.0" layoutY="295.0" prefHeight="196.0" prefWidth="252.0" rivit="Peli|Tunnit|Keskiarvo&#10;Runescape|100|3&#10;Dota 2|100|5&#10;Cs GO|100|10&#10;" />
+            <Button id="lisaaPeli" layoutX="216.0" layoutY="491.0" mnemonicParsing="false" onMouseClicked="#pelinLisays" text="Lisää peli" />
+            <Button id="sulje" layoutX="410.0" layoutY="491.0" mnemonicParsing="false" onMouseClicked="#handleLopeta" text="Sulje" />
             <ScrollPane fx:id="panelProfiili" layoutX="236.0" layoutY="77.0" prefHeight="200.0" prefWidth="200.0">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
@@ -68,7 +68,8 @@
               </content>
             </ScrollPane>
             <Label fx:id="labelVirhe" layoutX="14.0" layoutY="352.0" text="Label" />
-            <Button id="lisaaProfiili" layoutX="128.0" layoutY="327.0" mnemonicParsing="false" onMouseClicked="#lisaaProfiili" text="Lisää profiili" />
+            <Button id="lisaaProfiili" layoutX="2.0" layoutY="320.0" mnemonicParsing="false" onMouseClicked="#lisaaProfiili" text="Lisää profiili" />
+            <Button fx:id="poista" layoutX="161.0" layoutY="320.0" mnemonicParsing="false" onAction="#handlePoistaProfiili" text="Poista" />
          </children>
       </Pane>
    </left>

@@ -33,6 +33,7 @@ public class HarjoitustyoMain extends Application {
             });
             Ajastin ajastin = new Ajastin();
             harjoitustyoCtrl.setAjastin(ajastin);  
+            ajastin.lueTiedostosta("peliAjastin");
             
             primaryStage.show();
          

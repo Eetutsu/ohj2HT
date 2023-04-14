@@ -37,6 +37,7 @@ public class Pelit implements Iterable<Peli>{
      * @param dota1 lisättävä peli.  Huom tietorakenne muuttuu omistajaksi
      */
     public void lisaa(Peli dota1) {
+    	alkiot.add(dota1);
         muutettu = true;
     }
     
@@ -101,6 +102,7 @@ public class Pelit implements Iterable<Peli>{
         muutettu = false;
     }
 
+    
     /**
      * Asettaa tiedoston perusnimen ilan tarkenninta
      * @param tied tallennustiedoston perusnimi

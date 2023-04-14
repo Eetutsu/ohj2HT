@@ -47,13 +47,61 @@ public class HarjoitustyoGUIController implements Initializable{
     @FXML private Label labelVirhe;
 
     
- 
-
+	@Override
+	public void initialize(URL url, ResourceBundle bundle) {
+		alusta();
+	}
+	
+	
     @FXML private void handleHakuehto() {
         if ( profiiliKohdalla != null )
             hae(profiiliKohdalla.getTunnusNro());
 
     }
+	
+	
+    @FXML
+    void handleLopeta(MouseEvent event) {
+    	tallenna();
+    	Platform.exit();
+    }
+    
+    
+    @FXML
+    void lisaaProfiili() {
+        uusiProfiili();
+    }
+
+    
+    @FXML private void handlePoistaProfiili() {
+        Dialogs.showMessageDialog("Vielä ei osata poistaa jäsentä");
+    }
+
+    
+    @FXML
+    void pelinLisays(MouseEvent event) {
+    	uusiPeli();
+    }
+    
+    
+    @FXML private void handleMuokkaaHarrastus() {
+        ModalController.showModal(HarjoitustyoGUIController.class.getResource("HarrastusDialogView.fxml"), "Harrastus", null, "");
+    }
+    
+    
+    @FXML private void handlePoistaHarrastus() {
+        Dialogs.showMessageDialog("Ei osata vielä poistaa harrastusta");
+    }
+    
+    
+    @FXML private void handleTietoja() {
+        // Dialogs.showMessageDialog("Ei osata vielä tietoja");
+        ModalController.showModal(HarjoitustyoGUIController.class.getResource("AboutView.fxml"), "Kerho", null, "");
+    }
+
+    
+    
+
     
 
     @FXML private void handleTulosta() {
@@ -69,23 +117,13 @@ public class HarjoitustyoGUIController implements Initializable{
     }
 
     
-    @FXML
-    void lisaaProfiili() {
-        uusiProfiili();
-    }
+
 
     
-    @FXML
-    void pelinLisays(MouseEvent event) {
-    	uusiPeli();
-    }
+
 
     
-    @FXML
-    void suljeOhjelma(MouseEvent event) {
-    	tallenna();
-    	Platform.exit();
-    }
+
     
     
     @FXML
@@ -120,39 +158,64 @@ public class HarjoitustyoGUIController implements Initializable{
     }
 
 
-	@Override
-	public void initialize(URL url, ResourceBundle bundle) {
-		alusta();
-	}
+
 	
 
 	    
 	    
-	    @FXML private void handleMuokkaaHarrastus() {
-	        ModalController.showModal(HarjoitustyoGUIController.class.getResource("HarrastusDialogView.fxml"), "Harrastus", null, "");
-	    }
+
 	    
 
-	    @FXML private void handlePoistaHarrastus() {
-	        Dialogs.showMessageDialog("Ei osata vielä poistaa harrastusta");
-	    }
+
 	    
 
 	    
 
-	    @FXML private void handleTietoja() {
-	        // Dialogs.showMessageDialog("Ei osata vielä tietoja");
-	        ModalController.showModal(HarjoitustyoGUIController.class.getResource("AboutView.fxml"), "Kerho", null, "");
-	    }
 
 
 
 	//=========================================================================================== 
 
-	private String ajastinnimi = "ajastin";
+	private String ajastinnimi = "peliAjastin";
     private Ajastin ajastin;
     private Profiili profiiliKohdalla;
     private TextArea areaProfiili = new TextArea();
+    
+    
+    
+    
+    /**
+     * Tekee tarvittavat muut alustukset, nyt vaihdetaan GridPanen tilalle
+     * yksi iso tekstikenttä, johon voidaan tulostaa profiilin tiedot.
+     * Alustetaan myös profiililistan kuuntelija 
+     */
+    protected void alusta() {
+    	
+        panelProfiili.setContent(areaProfiili);
+        areaProfiili.setFont(new Font("Courier New", 12));
+        panelProfiili.setFitToHeight(true);
+        
+        chooserProfiilit.clear();
+        chooserProfiilit.addSelectionListener(e -> naytaProfiili());
+        
+    }
+    
+    
+    private void naytaVirhe(String virhe) {
+        if ( virhe == null || virhe.isEmpty() ) {
+            labelVirhe.setText("");
+            labelVirhe.getStyleClass().removeAll("virhe");
+            return;
+        }
+        labelVirhe.setText(virhe);
+        labelVirhe.getStyleClass().add("virhe");
+    }
+    
+    
+    private void setTitle(String title) {
+        ModalController.getStage(hakuehto).setTitle(title);
+    }
+    
     
     
     /** 
@@ -172,39 +235,6 @@ public class HarjoitustyoGUIController implements Initializable{
         hae(profiiliKohdalla.getTunnusNro());   
 
     } 
- 
-
-    
-    
-    /**
-     * Tekee tarvittavat muut alustukset, nyt vaihdetaan GridPanen tilalle
-     * yksi iso tekstikenttä, johon voidaan tulostaa profiilin tiedot.
-     * Alustetaan myös profiililistan kuuntelija 
-     */
-    protected void alusta() {
-        panelProfiili.setContent(areaProfiili);
-        areaProfiili.setFont(new Font("Courier New", 12));
-        panelProfiili.setFitToHeight(true);
-        
-        chooserProfiilit.clear();
-        chooserProfiilit.addSelectionListener(e -> naytaProfiili());
-    }
-    
-    
-    private void naytaVirhe(String virhe) {
-        if ( virhe == null || virhe.isEmpty() ) {
-            labelVirhe.setText("");
-            labelVirhe.getStyleClass().removeAll("virhe");
-            return;
-        }
-        labelVirhe.setText(virhe);
-        labelVirhe.getStyleClass().add("virhe");
-    }
-    
-    
-    private void setTitle(String title) {
-        ModalController.getStage(hakuehto).setTitle(title);
-    }
     
     
     /**

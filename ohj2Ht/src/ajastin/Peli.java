@@ -171,7 +171,9 @@ public class Peli {
      */
     public static void main(String[] args) {
         Peli pel = new Peli();
+
         pel.lisaaPeli(2);
+        System.out.println(pel.toString());
         pel.tulosta(System.out);
     }
 
