@@ -18,6 +18,7 @@ import fi.jyu.mit.fxgui.ComboBoxChooser;
 import fi.jyu.mit.fxgui.Dialogs;
 import fi.jyu.mit.fxgui.ListChooser;
 import fi.jyu.mit.fxgui.ModalController;
+import fi.jyu.mit.fxgui.StringGrid;
 import fi.jyu.mit.fxgui.TextAreaOutputStream;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -45,6 +46,10 @@ public class HarjoitustyoGUIController implements Initializable{
     @FXML private TextField hakuehto;
     @FXML private ComboBoxChooser<String> cbKentat;
     @FXML private Label labelVirhe;
+    @FXML private StringGrid<Peli> tablePelit;
+    @FXML private TextField editNimi; 
+    @FXML private TextField editNickname; 
+
 
     
 	@Override
@@ -180,6 +185,8 @@ public class HarjoitustyoGUIController implements Initializable{
     private Ajastin ajastin;
     private Profiili profiiliKohdalla;
     private TextArea areaProfiili = new TextArea();
+    private TextField edits[]; 
+
     
     
     protected void avaa() {
@@ -193,13 +200,12 @@ public class HarjoitustyoGUIController implements Initializable{
      * Alustetaan myös profiililistan kuuntelija 
      */
     protected void alusta() {
-        panelProfiili.setContent(areaProfiili);
-        areaProfiili.setFont(new Font("Courier New", 12));
-        panelProfiili.setFitToHeight(true);
+
         
         chooserProfiilit.clear();
         chooserProfiilit.addSelectionListener(e -> naytaProfiili());
-
+        
+        edits = new TextField[]{editNimi, editNickname}; 
         
     }
     
@@ -296,22 +302,48 @@ public class HarjoitustyoGUIController implements Initializable{
     protected void naytaProfiili() {
         profiiliKohdalla = chooserProfiilit.getSelectedObject();
 
-        if (profiiliKohdalla == null) {
-            areaProfiili.clear();
-            return;
-        }
+        if (profiiliKohdalla == null) return;
+        
+        ProfiiliDialogController.naytaProfiili(edits, profiiliKohdalla); 
+        naytaPelit(profiiliKohdalla);
 
-
-        areaProfiili.setText("");
-        try (PrintStream os = TextAreaOutputStream.getTextPrintStream(areaProfiili)) {
-            		
-            tulosta(os,profiiliKohdalla);  
 
         }
+    
+    
+    
+    private void naytaPelit(Profiili profiili) {
+        tablePelit.clear();
+        if ( profiili == null ) return;
+        
+        try {
+            List<Peli> pelit = ajastin.annaPelit(profiili);
+            if ( pelit.size() == 0 ) return;
+            for (Peli har: pelit)
+                naytaPeli(har);
+        } catch (SailoException e) {
+            // naytaVirhe(e.getMessage());
+        } 
+
+		
+	}
+
+
+	private void naytaPeli(Peli har) {
+        String[] rivi = har.toString().split("\\|"); // TODO: huono ja tilapäinen ratkaisu
+        tablePelit.add(har,rivi[2],rivi[3]);
+
+		
+	}
+
+	
+    private void muokkaa() {
+        ProfiiliDialogController.kysyProfiili(null, profiiliKohdalla);
     }
-    
-    
-    /**
+
+	
+
+	/**
      * Hakee profiilien tiedot listaan
      * @param jnro profiilin numero, joka aktivoidaan haun jälkeen
      */

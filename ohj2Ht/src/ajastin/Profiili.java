@@ -34,7 +34,10 @@ public class Profiili {
         return nimi;
     }
 
-
+    public String getNickname() {
+    	return nickName;
+    }
+    
     /**
      * Apumetodi, jolla saadaan täytettyä testiarvot jäsenelle. 
      */
