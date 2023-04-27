@@ -1,6 +1,7 @@
 package Ht;
 
 import java.awt.Desktop;
+import static Ht.ProfiiliDialogController.getFieldId; 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
@@ -20,11 +21,14 @@ import fi.jyu.mit.fxgui.ListChooser;
 import fi.jyu.mit.fxgui.ModalController;
 import fi.jyu.mit.fxgui.StringGrid;
 import fi.jyu.mit.fxgui.TextAreaOutputStream;
+import fi.jyu.mit.ohj2.Mjonot;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
@@ -37,6 +41,7 @@ import javafx.scene.control.TextField;
       // TODOpackage Ht;
 
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 
 public class HarjoitustyoGUIController implements Initializable{
@@ -47,8 +52,10 @@ public class HarjoitustyoGUIController implements Initializable{
     @FXML private ComboBoxChooser<String> cbKentat;
     @FXML private Label labelVirhe;
     @FXML private StringGrid<Peli> tablePelit;
-    @FXML private TextField editNimi; 
-    @FXML private TextField editNickname; 
+    @FXML private GridPane gridProfiili;
+    
+
+
 
 
     
@@ -124,11 +131,16 @@ public class HarjoitustyoGUIController implements Initializable{
     
 
 
+    @FXML private void handleMuokkaaProfiili() {
+        muokkaa(1);
+    }
+
+
+
     
 
-
     
-
+    
     
     
     @FXML
@@ -186,6 +198,9 @@ public class HarjoitustyoGUIController implements Initializable{
     private Profiili profiiliKohdalla;
     private TextArea areaProfiili = new TextArea();
     private TextField edits[]; 
+    private static Peli apupeli = new Peli(); 
+
+    int kentta = 0;
 
     
     
@@ -205,12 +220,69 @@ public class HarjoitustyoGUIController implements Initializable{
         chooserProfiilit.clear();
         chooserProfiilit.addSelectionListener(e -> naytaProfiili());
         
-        edits = new TextField[]{editNimi, editNickname}; 
-        
+        edits = ProfiiliDialogController.luoKentat(gridProfiili); 
+        for (TextField edit: edits)  
+            if ( edit != null ) {  
+                edit.setEditable(false);  
+                edit.setOnMouseClicked(e -> { if ( e.getClickCount() > 1 ) muokkaa(getFieldId(e.getSource(),0)); });  
+                edit.focusedProperty().addListener((a,o,n) -> kentta = getFieldId(edit,kentta));  
+            }   
+ 
+        int eka = apupeli.ekaKentta(); 
+                 int lkm = apupeli.getKenttia(); 
+                 String[] headings = new String[lkm-eka]; 
+                 for (int i=0, k=eka; k<lkm; i++, k++) headings[i] = apupeli.getKysymys(k); 
+                 tablePelit.initTable(headings); 
+                 tablePelit.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); 
+                 tablePelit.setEditable(false); 
+                 tablePelit.setPlaceholder(new Label("Ei vielä harrastuksia")); 
+                  
+                 // Tämä on vielä huono, ei automaattisesti muutu jos kenttiä muutetaan. 
+                 tablePelit.setColumnSortOrderNumber(1); 
+                 tablePelit.setColumnSortOrderNumber(2); 
+                 tablePelit.setColumnWidth(1, 60);
     }
     
     
-    private void naytaVirhe(String virhe) {
+
+         protected void naytaJasen() {
+    	         profiiliKohdalla = chooserProfiilit.getSelectedObject();
+    	         if (profiiliKohdalla == null) return;
+    	         
+    	         ProfiiliDialogController.naytaProfiili(edits, profiiliKohdalla); 
+    	         naytaHarrastukset(profiiliKohdalla);
+    	     }
+
+    
+    
+     private void naytaHarrastukset(Profiili jasen) {
+         tablePelit.clear();
+         if ( jasen == null ) return;
+         
+         try {
+             List<Peli> harrastukset = ajastin.annaPelit(jasen);
+             if ( harrastukset.size() == 0 ) return;
+             for (Peli har: harrastukset)
+                 naytaPeli(har);
+         } catch (SailoException e) {
+             // naytaVirhe(e.getMessage());
+         } 
+     }
+     
+     
+     
+     private void naytaHarrastus(Peli har) {
+         int kenttia = har.getKenttia(); 
+         String[] rivi = new String[kenttia-har.ekaKentta()]; 
+         for (int i=0, k=har.ekaKentta(); k < kenttia; i++, k++) 
+             rivi[i] = har.anna(k); 
+         tablePelit.add(har,rivi);
+     }
+
+     
+
+
+	private void naytaVirhe(String virhe) {
         if ( virhe == null || virhe.isEmpty() ) {
             labelVirhe.setText("");
             labelVirhe.getStyleClass().removeAll("virhe");
@@ -337,9 +409,23 @@ public class HarjoitustyoGUIController implements Initializable{
 	}
 
 	
-    private void muokkaa() {
-        ProfiiliDialogController.kysyProfiili(null, profiiliKohdalla);
-    }
+    private void muokkaa(int k) {
+        if ( profiiliKohdalla == null ) return; 
+        try { 
+            Profiili jasen; 
+            jasen = ProfiiliDialogController.kysyProfiili(null, profiiliKohdalla.clone(), k);   
+            if ( jasen == null ) return; 
+            ajastin.korvaaTaiLisaa(jasen); 
+            hae(jasen.getTunnusNro()); 
+        } catch (CloneNotSupportedException e) { 
+            // 
+        } catch (SailoException e) { 
+            Dialogs.showMessageDialog(e.getMessage()); 
+        } 
+    }     
+    
+
+
 
 	
 
@@ -380,6 +466,7 @@ public class HarjoitustyoGUIController implements Initializable{
      */
     protected void uusiProfiili() {
         Profiili uusi = new Profiili();
+        uusi = ProfiiliDialogController.kysyProfiili(null, uusi, 1); 
         uusi.rekisteroi();
         uusi.annaTiedot();
         try {

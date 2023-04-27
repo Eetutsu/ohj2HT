@@ -91,7 +91,7 @@ public class Profiilit implements Iterable<Profiili> {
      * @return viite profiiliin, jonka indeksi on i
      * @throws IndexOutOfBoundsException jos i ei ole sallitulla alueella  
      */
-    public Profiili anna(int i) throws IndexOutOfBoundsException {
+    protected Profiili anna(int i) throws IndexOutOfBoundsException {
         if ( i < 0 || lkm <= i ) throw new IndexOutOfBoundsException("Laiton indeksi: " + i);
 
         return alkiot[i];
@@ -338,6 +338,19 @@ public class Profiilit implements Iterable<Profiili> {
         return lkm;
     }
 
+    
+    
+	public void korvaaTaiLisaa(Profiili jasen) throws SailoException {
+        int id = jasen.getTunnusNro();
+        for (int i = 0; i < lkm; i++) {
+            if ( alkiot[i].getTunnusNro() == id ) {
+                alkiot[i] = jasen;
+                muutettu = true;
+                return;
+            }
+        }
+        lisaa(jasen);
+	}
 
     /**
      * Testiohjelma profiili kannalle
@@ -377,6 +390,12 @@ public class Profiilit implements Iterable<Profiili> {
 			e.printStackTrace();
 		}
     }
+	
+
+
+
+		
+	}
     
 
-}
+

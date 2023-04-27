@@ -47,6 +47,7 @@ public class Peli {
         profiiliNro = nro;
         ala = "Dota";
         tunnit = ajastin.Profiili.rand(0, 60);
+        
     }
 
 
@@ -55,7 +56,7 @@ public class Peli {
      * @param out tietovirta johon tulostetaan
      */
     public void tulosta(PrintStream out) {
-        out.println(ala + " " +  " " + tunnit);
+        out.println(ala + " "  + tunnit );
     }
 
 
@@ -149,7 +150,7 @@ public class Peli {
         profiiliNro = Mjonot.erota(sb, '|', profiiliNro);
         ala = Mjonot.erota(sb, '|', ala);
         tunnit = Mjonot.erota(sb, '|', tunnit);
-    }
+            }
 
     
     @Override
@@ -176,6 +177,36 @@ public class Peli {
         System.out.println(pel.toString());
         pel.tulosta(System.out);
     }
+
+
+	public int ekaKentta() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	public int getKenttia() {
+		// TODO Auto-generated method stub
+		return 2;
+	}
+
+
+	public String getKysymys(int k) {
+        switch ( k ) {
+        case 0: return "Peli";
+        case 1: return "tunnit";
+        default: return "Äääliö";
+        }
+	}
+
+
+	public String anna(int k) {
+        switch ( k ) {
+        case 0: return "" + tunnusNro;
+        case 1: return "" + tunnit;
+        default: return "Äääliö";
+        }
+	}
 
 }
 

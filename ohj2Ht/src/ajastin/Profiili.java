@@ -12,13 +12,41 @@ import fi.jyu.mit.ohj2.Mjonot;
  * @author Eetu Alanen
  * @version 1.0, 1.3.2023
  */
-public class Profiili {
+public class Profiili implements Cloneable{
 	private int        tunnusNro;
     private String     nimi           = "";
     private String     nickName           = "";
 
 
     private static int seuraavaNro    = 1;
+    
+    
+    /**
+     * Palauttaa jäsenen kenttien lukumäärän
+     * @return kenttien lukumäärä
+     */
+    public int getKenttia() {
+        return 3;
+    }
+
+
+    /**
+     * Eka kenttä joka on mielekäs kysyttäväksi
+     * @return eknn kentän indeksi
+     */
+    public int ekaKentta() {
+        return 1;
+    }
+
+
+    /**
+     * Alustetaan jäsenen merkkijono-attribuuti tyhjiksi jonoiksi
+     * ja tunnusnro = 0.
+     */
+    public Profiili() {
+        // Toistaiseksi ei tarvita mitään
+    }
+
 
 
     /**
@@ -37,6 +65,75 @@ public class Profiili {
     public String getNickname() {
     	return nickName;
     }
+    
+    
+    public String anna(int k) {
+        switch ( k ) {
+        case 0: return "" + tunnusNro;
+        case 1: return "" + nimi;
+        case 2: return "" + nickName;
+        default: return "Äääliö";
+        }
+    }
+    
+    
+    
+    @Override
+    public Profiili clone() throws CloneNotSupportedException {
+        Profiili uusi;
+        uusi = (Profiili) super.clone();
+        return uusi;
+    }
+
+
+    /**
+    * Asettaa k:n kentän arvoksi parametrina tuodun merkkijonon arvon
+    * @param k kuinka monennen kentän arvo asetetaan
+    * @param jono jonoa joka asetetaan kentän arvoksi
+    * @return null jos asettaminen onnistuu, muuten vastaava virheilmoitus.
+    * @example
+    * <pre name="test">
+    *   Jasen jasen = new Jasen();
+    *   jasen.aseta(1,"Ankka Aku") === null;
+    *   jasen.aseta(2,"kissa") =R= "Hetu liian lyhyt"
+    *   jasen.aseta(2,"030201-1111") === "Tarkistusmerkin kuuluisi olla C"; 
+    *   jasen.aseta(2,"030201-111C") === null; 
+    *   jasen.aseta(9,"kissa") === "Liittymisvuosi väärin jono = \"kissa\"";
+    *   jasen.aseta(9,"1940") === null;
+    * </pre>
+    */
+
+    
+    
+    public String aseta(int k, String jono) {
+        String tjono = jono.trim();
+        StringBuffer sb = new StringBuffer(tjono);
+        switch ( k ) {
+        case 0:
+            setTunnusNro(Mjonot.erota(sb, '§', getTunnusNro()));
+            return null;
+        case 1:
+            nimi = tjono;
+            return null;
+        case 2:
+            nickName = tjono;
+            return null;
+        default: 
+        	return "ÄÄliö";
+        }
+    }
+
+    
+    public String getKysymys(int k) {
+        switch ( k ) {
+        case 0: return "Tunnus nro";
+        case 1: return "nimi";
+        case 2: return "nickName";
+        default: return "Äääliö";
+        }
+    }
+
+    
     
     /**
      * Apumetodi, jolla saadaan täytettyä testiarvot jäsenelle. 
@@ -135,10 +232,15 @@ public class Profiili {
      */
     @Override
     public String toString() {
-        return "" +
-                getTunnusNro() + "|" +
-                nimi + "|" +
-                nickName + "|";
+        StringBuffer sb = new StringBuffer("");
+        String erotin = "";
+        for (int k = 0; k < getKenttia(); k++) {
+            sb.append(erotin);
+            sb.append(anna(k));
+            erotin = "|";
+        }
+        return sb.toString();
+
     }
 
     
@@ -164,17 +266,47 @@ public class Profiili {
      */
     public void parse(String rivi) {
         StringBuffer sb = new StringBuffer(rivi);
-        setTunnusNro(Mjonot.erota(sb, '|', getTunnusNro()));
-        nimi = Mjonot.erota(sb, '|', nimi);
-        nickName = Mjonot.erota(sb, '|', nickName);
+        for (int k = 0; k < getKenttia(); k++)
+            aseta(k, Mjonot.erota(sb, '|'));
+
 
     }
+    
+    
+    
+    /**
+     * Tutkii onko jäsenen tiedot samat kuin parametrina tuodun jäsenen tiedot
+     * @param jasen jäsen johon verrataan
+     * @return true jos kaikki tiedot samat, false muuten
+     * @example
+     * <pre name="test">
+     *   Jasen jasen1 = new Jasen();
+     *   jasen1.parse("   3  |  Ankka Aku   | 030201-111C");
+     *   Jasen jasen2 = new Jasen();
+     *   jasen2.parse("   3  |  Ankka Aku   | 030201-111C");
+     *   Jasen jasen3 = new Jasen();
+     *   jasen3.parse("   3  |  Ankka Aku   | 030201-115H");
+     *   
+     *   jasen1.equals(jasen2) === true;
+     *   jasen2.equals(jasen1) === true;
+     *   jasen1.equals(jasen3) === false;
+     *   jasen3.equals(jasen2) === false;
+     * </pre>
+     */
+    public boolean equals(Profiili jasen) {
+        if ( jasen == null ) return false;
+        for (int k = 0; k < getKenttia(); k++)
+            if ( !anna(k).equals(jasen.anna(k)) ) return false;
+        return true;
+    }
+
 
     
     @Override
     public boolean equals(Object jasen) {
-        if ( jasen == null ) return false;
-        return this.toString().equals(jasen.toString());
+        if ( jasen instanceof Profiili ) return equals((Profiili)jasen);
+        return false;
+
     }
 
 

@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fxKerho.JasenDialogController">
+<BorderPane xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Ht.ProfiiliDialogController">
    <bottom>
       <VBox BorderPane.alignment="CENTER">
          <children>
@@ -31,9 +31,9 @@
       </VBox>
             </bottom>
    <center>
-      <ScrollPane fitToWidth="true" pannable="true" BorderPane.alignment="CENTER">
+      <ScrollPane fx:id="panelProfiili" fitToWidth="true" pannable="true" BorderPane.alignment="CENTER">
          <content>
-            <GridPane hgap="10.0">
+            <GridPane fx:id="gridProfiili" hgap="10.0">
                <columnConstraints>
                   <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" minWidth="10.0" />
                   <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
@@ -56,8 +56,8 @@
                   <Label text="nimi" />
                   <Label text="nickname" GridPane.rowIndex="1" />
 
-                           <TextField fx:id="editNimi" text="Meikäläinen Matti" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
-                  <TextField fx:id="editNickname" text="Drago" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
+                  <TextField text="Meikäläinen Matti" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                  <TextField text="Drago" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
 
                </children>
                <opaqueInsets>

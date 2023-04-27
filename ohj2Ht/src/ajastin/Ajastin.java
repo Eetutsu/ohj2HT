@@ -174,4 +174,12 @@ public class Ajastin {
         }
     }
 
+
+
+
+	public void korvaaTaiLisaa(Profiili jasen) throws SailoException {
+		profiilit.korvaaTaiLisaa(jasen);
+		
+	}
+
 }
