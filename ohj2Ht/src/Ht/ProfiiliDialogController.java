@@ -34,6 +34,7 @@ public class ProfiiliDialogController implements ModalControllerInterface<Profii
     @FXML private Label labelVirhe;
     @FXML private ScrollPane panelProfiili;
     @FXML private GridPane gridProfiili;
+    
 
 
     @Override

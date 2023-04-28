@@ -21,7 +21,7 @@ public class Pelit implements Iterable<Peli>{
 
 
     /** peleistä taulukko */
-    private final Collection<Peli> alkiot = new ArrayList<Peli>();
+    private final List<Peli> alkiot = new ArrayList<Peli>();
     
     
     /**
@@ -40,6 +40,74 @@ public class Pelit implements Iterable<Peli>{
     	alkiot.add(dota1);
         muutettu = true;
     }
+    
+    
+    
+    
+    /**
+     * Poistaa valitun pelin
+     * @param harrastus poistettava peli
+     * @return tosi jos löytyi poistettava tietue 
+     * @example
+     * <pre name="test">
+     * #THROWS SailoException 
+     * #import java.io.File;
+     *  Pelit pelit = new Pelit();
+     *  Peli dota22 = new Peli(); dota22.lisaaPeli(3); 
+     *  pelit.lisaa(dota22);
+     *  Peli dota24 = new Peli(); dota22.lisaaPeli(2); 
+     *  pelit.lisaa(dota24);
+     *  Peli dota23 = new Peli(); dota23.lisaaPeli(1);
+     *  pelit.poista(dota23) === false ; pelit.getLkm() === 2;
+     *  pelit.poista(dota22) === true;   pelit.getLkm() === 1;
+     *  List<Peli> h = pelit.annaPelit(3);
+     *  h.size() === 0; 
+     * </pre>
+     */
+    public boolean poista(Peli harrastus) {
+        boolean ret = alkiot.remove(harrastus);
+        if (ret) muutettu = true;
+        return ret;
+    }
+
+    
+    
+    
+    /**
+     * Poistaa kaikki tietyn tietyn profiilin pelit
+     * @param tunnusNro viite siihen, mihin liittyvät tietueet poistetaan
+     * @return montako poistettiin 
+     * @example
+     * <pre name="test">
+     *  Pelit pelit = new Pelit();
+     *  Peli dota22 = new Peli(); dota22.lisaaPeli(2); 
+     *  pelit.lisaa(dota22);
+     *  Peli dota24 = new Peli(); dota22.lisaaPeli(2); 
+     *  pelit.lisaa(dota24);
+     *  Peli dota23 = new Peli(); dota23.lisaaPeli(1);
+     *  pelit.lisaa(dota23);
+     *  pelit.poistaProfiilinPelit(2) === 1;  pelit.getLkm() === 2;
+     *  pelit.poistaProfiilinPelit(3) === 0;  pelit.getLkm() === 2;
+     *  List<Peli> h = pelit.annaPelit(2);
+     *  h.size() === 0; 
+     *  h = pelit.annaPelit(1);
+     *  h.get(0) === dota23;
+     * </pre>
+     */
+    public int poistaProfiilinPelit(int tunnusNro) {
+        int n = 0;
+        for (Iterator<Peli> it = alkiot.iterator(); it.hasNext();) {
+            Peli har = it.next();
+            if ( har.getProfiiliNro() == tunnusNro ) {
+                it.remove();
+                n++;
+            }
+        }
+        if (n > 0) muutettu = true;
+        return n;
+    }
+
+    
     
     
     /**
@@ -203,6 +271,27 @@ public class Pelit implements Iterable<Peli>{
         }
 
     }
+
+
+    /**
+     * Korvataan tia lisätään pelin tiedot
+     * @param har Peli jonka tietoja käytetään
+     */
+    
+    
+	public void korvaaTaiLisaa(Peli har) {
+        int id = har.getTunnusNro();
+        for (int i = 0; i < getLkm(); i++) {
+            if (alkiot.get(i).getTunnusNro() == id) {
+                alkiot.set(i, har);
+                muutettu = true;
+                return;
+            }
+        }
+        lisaa(har);
+
+		
+	}
 
 
 }

@@ -49,10 +49,36 @@ public class Ajastin {
      * @param nro viitenumero, jonka mukaan poistetaan
      * @return montako profiilia poistettiin
      */
-    public int poista(@SuppressWarnings("unused") int nro) {
-        return 0;
+    public int poista( Profiili profiili) {
+        if ( profiili == null ) return 0;
+        int ret = profiilit.poista(profiili.getTunnusNro()); 
+        pelit.poistaProfiilinPelit(profiili.getTunnusNro()); 
+        return ret; 
+
     }
 
+    
+    /** 
+     * Poistaa tämän harrastuksen 
+     * @param harrastus poistettava harrastus 
+     * @example
+     * <pre name="test">
+     * #THROWS Exception
+     * 	 Ajastin ajastin = new Ajastin();
+     *   Profiili matti1 = new Profiili();
+     *   ajastin.lisaa(matti1);
+     *   int id = matti1.getTunnusNro();
+     *   Peli dota11 = new Peli(id); dota11.lisaaPeli(id); ajastin.lisaa(dota11);
+     *   ajastin.annaPelit(matti1).size() === 1;
+     *   ajastin.poistaPeli(dota11);
+     *   ajastin.annaPelit(matti1).size() === 0;
+     *   
+     */ 
+    public void poistaPeli(Peli harrastus) { 
+        pelit.poista(harrastus); 
+    } 
+
+    
 
     /**
      * Lisää Ajastimeen uuden profiilin
@@ -179,6 +205,14 @@ public class Ajastin {
 
 	public void korvaaTaiLisaa(Profiili jasen) throws SailoException {
 		profiilit.korvaaTaiLisaa(jasen);
+		
+	}
+
+
+
+
+	public void korvaaTaiLisaa(Peli har) throws SailoException{
+		pelit.korvaaTaiLisaa(har);
 		
 	}
 

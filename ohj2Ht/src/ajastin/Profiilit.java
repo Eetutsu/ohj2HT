@@ -12,6 +12,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import fi.jyu.mit.ohj2.WildChars;
+
 /**
  * Kerhon jäsenistö joka osaa mm. lisätä uuden jäsenen
  *
@@ -48,15 +50,8 @@ public class Profiilit implements Iterable<Profiili> {
      * Profiilit.lisaa(matti1); Profiilit.getLkm() === 1;
      * Profiilit.lisaa(matti2); Profiilit.getLkm() === 2;
      * Profiilit.lisaa(matti1); Profiilit.getLkm() === 3;
-     * Profiilit.anna(0) === matti1;
-     * Profiilit.anna(1) === matti2;
-     * Profiilit.anna(2) === matti1;
-     * Profiilit.anna(1) == matti1 === false;
-     * Profiilit.anna(1) == matti2 === true;
-     * Profiilit.anna(3) === matti1; #THROWS IndexOutOfBoundsException 
      * Profiilit.lisaa(matti1); Profiilit.getLkm() === 4;
      * Profiilit.lisaa(matti1); Profiilit.getLkm() === 5;
-     * Profiilit.lisaa(matti1);  #THROWS SailoException
      * </pre>
      */
     public void lisaa(Profiili profiili) throws SailoException {
@@ -218,16 +213,16 @@ public class Profiilit implements Iterable<Profiili> {
      * #PACKAGEIMPORT
      * #import java.util.*;
      * 
-     * Jasenet jasenet = new Jasenet();
-     * Jasen aku1 = new Jasen(), aku2 = new Jasen();
+     * Profiilit profiilit = new Profiilit();
+     * Profiili aku1 = new Profiili(), aku2 = new Profiili();
      * aku1.rekisteroi(); aku2.rekisteroi();
      *
-     * jasenet.lisaa(aku1); 
-     * jasenet.lisaa(aku2); 
-     * jasenet.lisaa(aku1); 
+     * profiilit.lisaa(aku1); 
+     * profiilit.lisaa(aku2); 
+     * profiilit.lisaa(aku1); 
      * 
      * StringBuffer ids = new StringBuffer(30);
-     * for (Jasen jasen:jasenet)   // Kokeillaan for-silmukan toimintaa
+     * for (Profiili jasen:profiilit)   // Kokeillaan for-silmukan toimintaa
      *   ids.append(" "+jasen.getTunnusNro());           
      * 
      * String tulos = " " + aku1.getTunnusNro() + " " + aku2.getTunnusNro() + " " + aku1.getTunnusNro();
@@ -235,14 +230,14 @@ public class Profiilit implements Iterable<Profiili> {
      * ids.toString() === tulos; 
      * 
      * ids = new StringBuffer(30);
-     * for (Iterator<Jasen>  i=jasenet.iterator(); i.hasNext(); ) { // ja iteraattorin toimintaa
-     *   Jasen jasen = i.next();
+     * for (Iterator<Profiili>  i=profiilit.iterator(); i.hasNext(); ) { // ja iteraattorin toimintaa
+     *   Profiili jasen = i.next();
      *   ids.append(" "+jasen.getTunnusNro());           
      * }
      * 
      * ids.toString() === tulos;
      * 
-     * Iterator<Jasen>  i=jasenet.iterator();
+     * Iterator<Profiili>  i=profiilit.iterator();
      * i.next() == aku1  === true;
      * i.next() == aku2  === true;
      * i.next() == aku1  === true;
@@ -307,28 +302,93 @@ public class Profiilit implements Iterable<Profiili> {
      * @param k etsittävän kentän indeksi  
      * @return tietorakenteen löytyneistä jäsenistä 
      * @example 
-     * <pre name="test"> 
-     * #THROWS SailoException  
-     *   Jasenet jasenet = new Jasenet(); 
-     *   Jasen jasen1 = new Jasen(); jasen1.parse("1|Ankka Aku|030201-115H|Paratiisitie 13|"); 
-     *   Jasen jasen2 = new Jasen(); jasen2.parse("2|Ankka Tupu||030552-123B|"); 
-     *   Jasen jasen3 = new Jasen(); jasen3.parse("3|Susi Sepe|121237-121V||131313|Perämetsä"); 
-     *   Jasen jasen4 = new Jasen(); jasen4.parse("4|Ankka Iines|030245-115V|Ankkakuja 9"); 
-     *   Jasen jasen5 = new Jasen(); jasen5.parse("5|Ankka Roope|091007-408U|Ankkakuja 12"); 
-     *   jasenet.lisaa(jasen1); jasenet.lisaa(jasen2); jasenet.lisaa(jasen3); jasenet.lisaa(jasen4); jasenet.lisaa(jasen5);
-     *   // TODO: toistaiseksi palauttaa kaikki jäsenet 
-     * </pre> 
      */ 
-    @SuppressWarnings("unused")
     public Collection<Profiili> etsi(String hakuehto, int k) { 
+        String ehto = "*"; 
+        if ( hakuehto != null && hakuehto.length() > 0 ) ehto = hakuehto; 
+        int hk = k; 
+        if ( hk < 0 ) hk = 0;
+
         Collection<Profiili> loytyneet = new ArrayList<Profiili>(); 
         for (Profiili profiili : this) { 
-            loytyneet.add(profiili);  
+            if (WildChars.onkoSamat(profiili.anna(hk), ehto)) loytyneet.add(profiili); 
         } 
         return loytyneet; 
     }
     
 
+    /**
+     * Annetaan profiilin tunnusnro
+     * @param id
+     * @return
+     */
+
+    public Profiili annaId(int id) { 
+        for (Profiili jasen : this) { 
+            if (id == jasen.getTunnusNro()) return jasen; 
+        } 
+        return null; 
+    } 
+
+
+    /** 
+     * Etsii jäsenen id:n perusteella 
+     * @param id tunnusnumero, jonka mukaan etsitään 
+     * @return löytyneen jäsenen indeksi tai -1 jos ei löydy 
+     * <pre name="test"> 
+     * #THROWS SailoException  
+     * Profiilit profiilit = new Profiilit(); 
+     * Profiili aku1 = new Profiili(), aku2 = new Profiili(), aku3 = new Profiili(); 
+     * aku1.rekisteroi(); aku2.rekisteroi(); aku3.rekisteroi(); 
+     * int id1 = aku1.getTunnusNro(); 
+     * profiilit.lisaa(aku1); profiilit.lisaa(aku2); profiilit.lisaa(aku3); 
+     * profiilit.etsiId(id1+1) === 1; 
+     * profiilit.etsiId(id1+2) === 2; 
+     * </pre> 
+     */ 
+    public int etsiId(int id) { 
+        for (int i = 0; i < lkm; i++) 
+            if (id == alkiot[i].getTunnusNro()) return i; 
+        return -1; 
+    } 
+
+    
+    
+    
+    
+    /** 
+     * Poistaa jäsenen jolla on valittu tunnusnumero  
+     * @param id poistettavan jäsenen tunnusnumero 
+     * @return 1 jos poistettiin, 0 jos ei löydy 
+     * @example 
+     * <pre name="test"> 
+     * #THROWS SailoException  
+     * Profiilit profiilit = new Profiilit(); 
+     * Profiili aku1 = new Profiili(), aku2 = new Profiili(), aku3 = new Profiili(); 
+     * aku1.rekisteroi(); aku2.rekisteroi(); aku3.rekisteroi(); 
+     * int id1 = aku1.getTunnusNro(); 
+     * profiilit.lisaa(aku1); profiilit.lisaa(aku2); profiilit.lisaa(aku3); 
+     * profiilit.poista(id1+1) === 1; 
+     * profiilit.annaId(id1+1) === null; profiilit.getLkm() === 2; 
+     * profiilit.poista(id1) === 1; profiilit.getLkm() === 1; 
+     * profiilit.poista(id1+3) === 0; profiilit.getLkm() === 1; 
+     * </pre> 
+     *  
+     */ 
+    public int poista(int id) { 
+        int ind = etsiId(id); 
+        if (ind < 0) return 0; 
+        lkm--; 
+        for (int i = ind; i < lkm; i++) 
+            alkiot[i] = alkiot[i + 1]; 
+        alkiot[lkm] = null; 
+        muutettu = true; 
+        return 1; 
+    } 
+
+
+    
+    
 
     /**
      * Palauttaa ajastimen profiilien lukumäärän

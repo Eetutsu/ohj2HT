@@ -2,6 +2,7 @@ package ajastin;
 
 import java.io.*;
 
+import Ht.Tietue;
 import fi.jyu.mit.ohj2.Mjonot;
 
 
@@ -12,7 +13,7 @@ import fi.jyu.mit.ohj2.Mjonot;
  * @author Eetu Alanen
  * @version 1.0, 1.3.2023
  */
-public class Profiili implements Cloneable{
+public class Profiili implements Cloneable, Tietue{
 	private int        tunnusNro;
     private String     nimi           = "";
     private String     nickName           = "";
@@ -93,13 +94,9 @@ public class Profiili implements Cloneable{
     * @return null jos asettaminen onnistuu, muuten vastaava virheilmoitus.
     * @example
     * <pre name="test">
-    *   Jasen jasen = new Jasen();
-    *   jasen.aseta(1,"Ankka Aku") === null;
-    *   jasen.aseta(2,"kissa") =R= "Hetu liian lyhyt"
-    *   jasen.aseta(2,"030201-1111") === "Tarkistusmerkin kuuluisi olla C"; 
-    *   jasen.aseta(2,"030201-111C") === null; 
-    *   jasen.aseta(9,"kissa") === "Liittymisvuosi väärin jono = \"kissa\"";
-    *   jasen.aseta(9,"1940") === null;
+    *   Profiili profiili = new Profiili();
+    *   profiili.aseta(1,"Ankka Aku") === null;
+    *   profiili.aseta(2,"Drago") === null;
     * </pre>
     */
 
@@ -225,9 +222,8 @@ public class Profiili implements Cloneable{
      * @return jäsen tolppaeroteltuna merkkijonona 
      * @example
      * <pre name="test">
-     *   Jasen jasen = new Jasen();
-     *   jasen.parse("   3  |  Ankka Aku   | 030201-111C");
-     *   jasen.toString().startsWith("3|Ankka Aku|030201-111C|") === true; // on enemmäkin kuin 3 kenttää, siksi loppu |
+     *   Profiili profiili = new Profiili();
+     *   profiili.parse("3|Eetu Alanen| Tsuppi"); 
      * </pre>  
      */
     @Override
@@ -251,16 +247,13 @@ public class Profiili implements Cloneable{
      * 
      * @example
      * <pre name="test">
-     *   Jasen jasen = new Jasen();
-     *   jasen.parse("   3  |  Ankka Aku   | 030201-111C");
-     *   jasen.getTunnusNro() === 3;
-     *   jasen.toString().startsWith("3|Ankka Aku|030201-111C|") === true; // on enemmäkin kuin 3 kenttää, siksi loppu |
+     *   Profiili profiili = new Profiili();
+     *   profiili.parse("   3  |  Eetu Alanen | Tsuppi    C");
+     *   profiili.getTunnusNro() === 3;
      *
-     *   jasen.rekisteroi();
-     *   int n = jasen.getTunnusNro();
-     *   jasen.parse(""+(n+20));       // Otetaan merkkijonosta vain tunnusnumero
-     *   jasen.rekisteroi();           // ja tarkistetaan että seuraavalla kertaa tulee yhtä isompi
-     *   jasen.getTunnusNro() === n+20+1;
+     *   profiili.rekisteroi();
+     *   int n = profiili.getTunnusNro();
+     *   profiili.rekisteroi();           // ja tarkistetaan että seuraavalla kertaa tulee yhtä isompi
      *     
      * </pre>
      */
@@ -268,6 +261,8 @@ public class Profiili implements Cloneable{
         StringBuffer sb = new StringBuffer(rivi);
         for (int k = 0; k < getKenttia(); k++)
             aseta(k, Mjonot.erota(sb, '|'));
+
+        
 
 
     }
@@ -280,17 +275,17 @@ public class Profiili implements Cloneable{
      * @return true jos kaikki tiedot samat, false muuten
      * @example
      * <pre name="test">
-     *   Jasen jasen1 = new Jasen();
-     *   jasen1.parse("   3  |  Ankka Aku   | 030201-111C");
-     *   Jasen jasen2 = new Jasen();
-     *   jasen2.parse("   3  |  Ankka Aku   | 030201-111C");
-     *   Jasen jasen3 = new Jasen();
-     *   jasen3.parse("   3  |  Ankka Aku   | 030201-115H");
+     *   Profiili p   = new Profiili();
+     *   p.parse("   3  |  Eetu Alanen | Tsuppi     ");
+     *   Profiili p2  = new Profiili();
+     *   p2.parse("   3  |  Eetu Alanen | Tsuppi     ");
+     *   Profiili  p3 = new Profiili();
+     *   p3.parse("   3  |  Peetu Palanen|Tsubban    ");
      *   
-     *   jasen1.equals(jasen2) === true;
-     *   jasen2.equals(jasen1) === true;
-     *   jasen1.equals(jasen3) === false;
-     *   jasen3.equals(jasen2) === false;
+     *   p.equals(p2) === true;
+     *   p2.equals(p) === true;
+     *   p.equals(p3) === false;
+     *   p3.equals(p2) === false;
      * </pre>
      */
     public boolean equals(Profiili jasen) {
@@ -301,6 +296,9 @@ public class Profiili implements Cloneable{
     }
 
 
+    /**
+     * Ovatko kaksi profiilia samanlaiset
+     */
     
     @Override
     public boolean equals(Object jasen) {
@@ -310,6 +308,10 @@ public class Profiili implements Cloneable{
     }
 
 
+    /**
+     * Palautetaan tunnusNro
+     */
+    
     @Override
     public int hashCode() {
         return tunnusNro;
@@ -337,6 +339,6 @@ public class Profiili implements Cloneable{
         
         matti3.annaTiedot();
         matti3.tulosta(System.out);
-    }
+        }
 
 }

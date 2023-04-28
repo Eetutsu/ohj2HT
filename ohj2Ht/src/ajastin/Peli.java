@@ -3,6 +3,7 @@ package ajastin;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import Ht.Tietue;
 import fi.jyu.mit.ohj2.Mjonot;
 
 /*
@@ -10,12 +11,13 @@ import fi.jyu.mit.ohj2.Mjonot;
  * @version 1.0 15.3.2023
  */
 
-public class Peli {
+public class Peli implements Cloneable, Tietue {
 	
     private int tunnusNro;
     private int profiiliNro;
     private String ala;
-    private int tunnit;
+    private double tunnit;
+    
 
     private static int seuraavaNro = 1;
 
@@ -59,7 +61,11 @@ public class Peli {
         out.println(ala + " "  + tunnit );
     }
 
-
+    public double getTunnit() {
+    	return tunnit;
+    }
+    
+    
     /**
      * Tulostetaan henkilön tiedot
      * @param os tietovirta johon tulostetaan
@@ -152,6 +158,10 @@ public class Peli {
         tunnit = Mjonot.erota(sb, '|', tunnit);
             }
 
+    /**
+     * Onko kaksi peliä samat
+     */
+    
     
     @Override
     public boolean equals(Object obj) {
@@ -159,13 +169,95 @@ public class Peli {
         return this.toString().equals(obj.toString());
     }
     
+    
+    /**
+     * Palauetetaan tunnusNro
+     */
 
     @Override
     public int hashCode() {
         return tunnusNro;
     }
 
+    /**
+     * ensimmäisen kentän numero
+     */
+    
+    
+    
+	public int ekaKentta() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
+	
+	/**
+	 * Montako kentää
+	 */
+
+	public int getKenttia() {
+		// TODO Auto-generated method stub
+		return 2;
+	}
+
+	/**
+	 * Annetaan kysyttävät tiedot
+	 */
+
+	public String getKysymys(int k) {
+        switch ( k ) {
+        case 0: return "Peli";
+        case 1: return "Tunnit";
+        default: return "Äääliö";
+        }
+	}
+
+	/**
+	 * annetaan pyydetyt tiedot
+	 */
+
+	public String anna(int k) {
+        switch ( k ) {
+        case 0: return "" + ala;
+        case 1: return "" + tunnit;
+        default: return "Äääliö";
+        }
+	}
+
+	/**
+	 * Kloonataan peli
+	 */
+	
+    @Override
+    public Peli clone() throws CloneNotSupportedException {
+        Peli uusi;
+        uusi = (Peli) super.clone();
+        return uusi;
+    }
+	
+/**
+ * Asetetaan pelin tiedot	
+ */
+
+	@Override
+	public String aseta(int k, String jono) {
+        String tjono = jono.trim();
+        StringBuffer sb = new StringBuffer(tjono);
+        switch ( k ) {
+        case 0:
+            ala = tjono;
+            return null;
+        case 1:
+        	if(tjono.isEmpty()) tunnit = 0;
+        	else tunnit = Double.parseDouble(tjono);
+            return null;
+        default: 
+        	return "ÄÄliö";
+        }
+	}
+
+    
+    
     /**
      * Testiohjelma Pelille.
      * @param args ei käytössä
@@ -179,34 +271,7 @@ public class Peli {
     }
 
 
-	public int ekaKentta() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
-
-	public int getKenttia() {
-		// TODO Auto-generated method stub
-		return 2;
-	}
-
-
-	public String getKysymys(int k) {
-        switch ( k ) {
-        case 0: return "Peli";
-        case 1: return "tunnit";
-        default: return "Äääliö";
-        }
-	}
-
-
-	public String anna(int k) {
-        switch ( k ) {
-        case 0: return "" + tunnusNro;
-        case 1: return "" + tunnit;
-        default: return "Äääliö";
-        }
-	}
 
 }
 

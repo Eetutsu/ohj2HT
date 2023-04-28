@@ -1,12 +1,16 @@
 package Ht;
 
 import java.awt.Desktop;
+import java.lang.Object;
+import org.apache.commons.lang3.time.StopWatch;
+
 import static Ht.ProfiiliDialogController.getFieldId; 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -31,6 +35,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.input.KeyCode;
 
 /**
  * @author Eetu Alanen
@@ -53,9 +59,12 @@ public class HarjoitustyoGUIController implements Initializable{
     @FXML private Label labelVirhe;
     @FXML private StringGrid<Peli> tablePelit;
     @FXML private GridPane gridProfiili;
+    @FXML private Label ajastinLabel;
+    @FXML private ToggleButton ajastinNappi;
+    @FXML private Label yhteensa;
     
 
-
+   StopWatch s = new StopWatch();
 
 
     
@@ -65,9 +74,8 @@ public class HarjoitustyoGUIController implements Initializable{
 	}
 	
 	
-    @FXML private void handleHakuehto() {
-        if ( profiiliKohdalla != null )
-            hae(profiiliKohdalla.getTunnusNro());
+    @FXML private void hakuehto() {
+    	hae(0);
 
     }
 	
@@ -86,7 +94,7 @@ public class HarjoitustyoGUIController implements Initializable{
 
     
     @FXML private void handlePoistaProfiili() {
-        Dialogs.showMessageDialog("Vielä ei osata poistaa jäsentä");
+        poistaProfiili();
     }
 
     
@@ -96,22 +104,12 @@ public class HarjoitustyoGUIController implements Initializable{
     }
     
     
-    @FXML private void handleMuokkaaHarrastus() {
-        ModalController.showModal(HarjoitustyoGUIController.class.getResource("HarrastusDialogView.fxml"), "Harrastus", null, "");
-    }
-    
-    
-    @FXML private void handlePoistaHarrastus() {
-        Dialogs.showMessageDialog("Ei osata vielä poistaa harrastusta");
-    }
-    
-    
-    @FXML private void handleTietoja() {
-        // Dialogs.showMessageDialog("Ei osata vielä tietoja");
-        ModalController.showModal(HarjoitustyoGUIController.class.getResource("AboutView.fxml"), "Kerho", null, "");
-    }
 
     
+    
+    @FXML private void handlePoistaPeli() {
+        poistaPeli();
+    }
     
 
     
@@ -123,69 +121,23 @@ public class HarjoitustyoGUIController implements Initializable{
 
 
 	
-    @FXML
-    void aloitaAjastin(MouseEvent event) {
-    	Dialogs.showMessageDialog("Ei osata vielä ajastaa");
+    
+
+
+
+
+
+
+
+	@FXML private void handleMuokkaaProfiili() {
+        muokkaa(kentta);
     }
 
-    
-
-
-    @FXML private void handleMuokkaaProfiili() {
-        muokkaa(1);
-    }
-
-
-
-    
-
-    
-    
-    
     
     @FXML
     void etsi() {
-        String hakukentta = cbKentat.getSelectedText();
-        String ehto = hakuehto.getText(); 
-        if ( ehto.isEmpty() )
-            naytaVirhe(null);
-        else
-            naytaVirhe("Ei osata vielä hakea " + hakukentta + ": " + ehto);
+    	hae(0);
     }
-    
-    
-    @FXML private void handleTallenna() {
-        tallenna();
-    }
-
-
-    @FXML
-    void annaNimi() {
-    	Dialogs.showMessageDialog("Ei osata vielä antaa nimeä");
-    }
-
-    @FXML
-    void annaTunnit() {
-    	Dialogs.showMessageDialog("Ei osata vielä tunteja");
-    }
-
-    @FXML
-    void peliOk(MouseEvent event) {
-    	Dialogs.showMessageDialog("Ei osata vielä tallentaa");
-    }
-
-
-
-	
-
-	    
-	    
-
-	    
-
-
-	    
-
 	    
 
 
@@ -197,12 +149,16 @@ public class HarjoitustyoGUIController implements Initializable{
     private Ajastin ajastin;
     private Profiili profiiliKohdalla;
     private TextArea areaProfiili = new TextArea();
-    private TextField edits[]; 
+    private TextField edits[] = TietueDialogController.luoKentat(gridProfiili, new Profiili());; 
     private static Peli apupeli = new Peli(); 
+    private static Profiili apuprofiili = new Profiili(); 
+
 
     int kentta = 0;
 
-    
+    /**
+     * avaa ohjelman ensimmäisen kerran, jolloin luetaantiedosotn tiedot
+     */
     
     protected void avaa() {
     	lueTiedosto(ajastinnimi);
@@ -220,12 +176,19 @@ public class HarjoitustyoGUIController implements Initializable{
         chooserProfiilit.clear();
         chooserProfiilit.addSelectionListener(e -> naytaProfiili());
         
-        edits = ProfiiliDialogController.luoKentat(gridProfiili); 
+        cbKentat.clear(); 
+        for (int k = apuprofiili.ekaKentta(); k < apuprofiili.getKenttia(); k++) 
+            cbKentat.add(apuprofiili.getKysymys(k), null); 
+        cbKentat.getSelectionModel().select(0); 
+        
+        edits = TietueDialogController.luoKentat(gridProfiili, apuprofiili);  
+
         for (TextField edit: edits)  
             if ( edit != null ) {  
                 edit.setEditable(false);  
                 edit.setOnMouseClicked(e -> { if ( e.getClickCount() > 1 ) muokkaa(getFieldId(e.getSource(),0)); });  
                 edit.focusedProperty().addListener((a,o,n) -> kentta = getFieldId(edit,kentta));  
+                edit.setOnKeyPressed( e -> {if ( e.getCode() == KeyCode.F2 ) muokkaa(kentta);}); 
             }   
  
         int eka = apupeli.ekaKentta(); 
@@ -235,52 +198,49 @@ public class HarjoitustyoGUIController implements Initializable{
                  tablePelit.initTable(headings); 
                  tablePelit.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); 
                  tablePelit.setEditable(false); 
-                 tablePelit.setPlaceholder(new Label("Ei vielä harrastuksia")); 
+                 tablePelit.setPlaceholder(new Label("Ei vielä pelejä")); 
                   
                  // Tämä on vielä huono, ei automaattisesti muutu jos kenttiä muutetaan. 
                  tablePelit.setColumnSortOrderNumber(1); 
                  tablePelit.setColumnSortOrderNumber(2); 
                  tablePelit.setColumnWidth(1, 60);
+                 tablePelit.setColumnWidth(2, 60);
+                 tablePelit.setOnMouseClicked(e -> { if ( e.getClickCount() > 1 ) muokkaaPeli(); } );
+                 tablePelit.setOnKeyPressed( e -> {if ( e.getCode() == KeyCode.F2 ) muokkaaPeli();});
     }
     
+    /**
+     * Muokkaa peliä
+     */
+
+         private void muokkaaPeli() {
+        	 int r = tablePelit.getRowNr();
+        	 if ( r < 0 ) return; // klikattu ehkä otsikkoriviä
+        	 Peli har = tablePelit.getObject();
+        	 if ( har == null ) return;
+        	 int k = tablePelit.getColumnNr()+har.ekaKentta();
+        	 try {
+        		 har = TietueDialogController.kysyTietue(null, har.clone(), k);
+        		 if ( har == null ) return;
+        		 ajastin.korvaaTaiLisaa(har); 
+        		 naytaPelit(profiiliKohdalla);
+        		 tablePelit.selectRow(r);  // järjestetään sama rivi takaisin valituksi
+        	 } catch (CloneNotSupportedException  e) { /* clone on tehty */
+        	 } 
+        	 catch (SailoException e) {
+        		 Dialogs.showMessageDialog("Ongelmia lisäämisessä: " + e.getMessage());
+        	 }
+         }
+	
+
+
+    
     
 
-         protected void naytaJasen() {
-    	         profiiliKohdalla = chooserProfiilit.getSelectedObject();
-    	         if (profiiliKohdalla == null) return;
-    	         
-    	         ProfiiliDialogController.naytaProfiili(edits, profiiliKohdalla); 
-    	         naytaHarrastukset(profiiliKohdalla);
-    	     }
-
-    
-    
-     private void naytaHarrastukset(Profiili jasen) {
-         tablePelit.clear();
-         if ( jasen == null ) return;
-         
-         try {
-             List<Peli> harrastukset = ajastin.annaPelit(jasen);
-             if ( harrastukset.size() == 0 ) return;
-             for (Peli har: harrastukset)
-                 naytaPeli(har);
-         } catch (SailoException e) {
-             // naytaVirhe(e.getMessage());
-         } 
-     }
-     
-     
-     
-     private void naytaHarrastus(Peli har) {
-         int kenttia = har.getKenttia(); 
-         String[] rivi = new String[kenttia-har.ekaKentta()]; 
-         for (int i=0, k=har.ekaKentta(); k < kenttia; i++, k++) 
-             rivi[i] = har.anna(k); 
-         tablePelit.add(har,rivi);
-     }
-
-     
-
+   /**
+    * Näyttää virheen
+    * @param virhe
+    */
 
 	private void naytaVirhe(String virhe) {
         if ( virhe == null || virhe.isEmpty() ) {
@@ -299,21 +259,61 @@ public class HarjoitustyoGUIController implements Initializable{
     
     
     
+    
+    /**
+     * Poistetaan harrastustaulukosta valitulla kohdalla oleva harrastus. 
+     */
+    private void poistaPeli() {
+        int rivi = tablePelit.getRowNr();
+        if ( rivi < 0 ) return;
+        Peli harrastus = tablePelit.getObject();
+        if ( harrastus == null ) return;
+        ajastin.poistaPeli(harrastus);
+        naytaPelit(profiiliKohdalla);
+        int harrastuksia = tablePelit.getItems().size(); 
+        if ( rivi >= harrastuksia ) rivi = harrastuksia -1;
+        tablePelit.getFocusModel().focus(rivi);
+        tablePelit.getSelectionModel().select(rivi);
+    }
+
+
+    /*
+     * Poistetaan listalta valittu jäsen
+     */
+    private void poistaProfiili() {
+        Profiili jasen = profiiliKohdalla;
+        if ( jasen == null ) return;
+        if ( !Dialogs.showQuestionDialog("Poisto", "Poistetaanko jäsen: " + jasen.getNimi(), "Kyllä", "Ei") )
+            return;
+        ajastin.poista(jasen);
+        int index = chooserProfiilit.getSelectedIndex();
+        hae(0);
+        chooserProfiilit.setSelectedIndex(index);
+    }
+
+    
+    
+    
+    
     /** 
      * Tekee uuden tyhjän pelin editointia varten 
      * @throws SailoException 
      */ 
-    public void uusiPeli(){ 
+     void uusiPeli(){ 
         if ( profiiliKohdalla == null ) return; 
-        Peli pel = new Peli(); 
-        pel.rekisteroi(); 
-        pel.lisaaPeli(profiiliKohdalla.getTunnusNro()); 
         try {
-            ajastin.lisaa(pel);
-        } catch (SailoException e) {
-            Dialogs.showMessageDialog("Ongelmia lisäämisessä! " + e.getMessage());
-        } 
-        hae(profiiliKohdalla.getTunnusNro());   
+        	Peli pel = new Peli(profiiliKohdalla.getTunnusNro()); 
+        	pel = TietueDialogController.kysyTietue(null, pel, 0);
+        	if (pel == null) return;
+        	pel.rekisteroi();
+        	ajastin.lisaa(pel);
+        	naytaPelit(profiiliKohdalla);
+        	tablePelit.selectRow(1000);
+        	
+        }
+        catch (SailoException ex){
+        	Dialogs.showMessageDialog("Lisääminen epäonnistui: " + ex.getMessage());
+        }
 
     } 
     
@@ -376,16 +376,25 @@ public class HarjoitustyoGUIController implements Initializable{
 
         if (profiiliKohdalla == null) return;
         
-        ProfiiliDialogController.naytaProfiili(edits, profiiliKohdalla); 
+        TietueDialogController.naytaTietue(edits, profiiliKohdalla); 
         naytaPelit(profiiliKohdalla);
 
 
         }
     
     
-    
+    /**
+     * näyttää pelit ja niiden tiedot
+     * @param profiili
+     */
     private void naytaPelit(Profiili profiili) {
         tablePelit.clear();
+        try {
+			tunnitYht();
+		} catch (SailoException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         if ( profiili == null ) return;
         
         try {
@@ -394,13 +403,18 @@ public class HarjoitustyoGUIController implements Initializable{
             for (Peli har: pelit)
                 naytaPeli(har);
         } catch (SailoException e) {
-            // naytaVirhe(e.getMessage());
+             naytaVirhe(e.getMessage());
         } 
 
 		
 	}
 
 
+    /**
+     * näyttää valitun pelin
+     * @param har
+     */
+    
 	private void naytaPeli(Peli har) {
         String[] rivi = har.toString().split("\\|"); // TODO: huono ja tilapäinen ratkaisu
         tablePelit.add(har,rivi[2],rivi[3]);
@@ -409,11 +423,15 @@ public class HarjoitustyoGUIController implements Initializable{
 	}
 
 	
+	/**
+	 * Muokkaa valittua profiilia
+	 * @param k
+	 */
     private void muokkaa(int k) {
         if ( profiiliKohdalla == null ) return; 
         try { 
             Profiili jasen; 
-            jasen = ProfiiliDialogController.kysyProfiili(null, profiiliKohdalla.clone(), k);   
+            jasen = TietueDialogController.kysyTietue(null, profiiliKohdalla.clone(), k);   
             if ( jasen == null ) return; 
             ajastin.korvaaTaiLisaa(jasen); 
             hae(jasen.getTunnusNro()); 
@@ -433,13 +451,16 @@ public class HarjoitustyoGUIController implements Initializable{
      * Hakee profiilien tiedot listaan
      * @param jnro profiilin numero, joka aktivoidaan haun jälkeen
      */
-    protected void hae(int jnro) {
-        int k = cbKentat.getSelectionModel().getSelectedIndex();
+    protected void hae(int jnr) {
+    	 int jnro = jnr; // jnro jäsenen numero, joka aktivoidaan haun jälkeen 
         String ehto = hakuehto.getText(); 
-        if (k > 0 || ehto.length() > 0)
-            naytaVirhe(String.format("Ei osata hakea (kenttä: %d, ehto: %s)", k, ehto));
-        else
-            naytaVirhe(null);
+        if (jnro > 0 || ehto.length() > 0) {
+        	Profiili kohdalla = profiiliKohdalla;
+        	if (kohdalla != null) jnro = kohdalla.getTunnusNro();
+        }
+            
+        int k = cbKentat.getSelectionModel().getSelectedIndex() + apuprofiili.ekaKentta(); 
+        if (ehto.indexOf('*') < 0) ehto = "*" + ehto + "*"; 
 
         chooserProfiilit.clear();
 
@@ -466,7 +487,7 @@ public class HarjoitustyoGUIController implements Initializable{
      */
     protected void uusiProfiili() {
         Profiili uusi = new Profiili();
-        uusi = ProfiiliDialogController.kysyProfiili(null, uusi, 1); 
+        uusi = TietueDialogController.kysyTietue(null, uusi, 1);
         uusi.rekisteroi();
         uusi.annaTiedot();
         try {
@@ -511,8 +532,26 @@ public class HarjoitustyoGUIController implements Initializable{
         }    
 
     }
+    
 
-
+    /**
+     * laskee yhteen tunnit
+     * @return
+     * @throws SailoException
+     */
+    public void tunnitYht() throws SailoException {
+    	double t = 0;
+    	String a;
+		List<Peli> p = new ArrayList(ajastin.annaPelit(profiiliKohdalla));
+    	for (int i = 0; i<p.size(); i++) {
+    		t = t + p.get(i).getTunnit();
+    	}
+    	
+    	if (Double.toString(t) == "") a = "0";
+    	else a = Double.toString(t);
+    	yhteensa.setText("Yhteensä tunteja : " + a);
+    	}
+    
 
 }
 
