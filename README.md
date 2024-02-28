@@ -1,2 +1,2 @@
-# Ohjelmointi 2 hajroitustyö
+# Ohjelmointi 2 harjoitustyö
 Kyseessä on ohjelma, johon voi itse kirjata pelien pelatut tunnit.
